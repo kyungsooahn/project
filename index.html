@@ -3,47 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>금융/부동산 자격증 합격 패스 🎓</title>
+    <title>합격 패스 - 1000제 마스터 🎓</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .section-list {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .section-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: rgba(0,0,0,0.03);
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: inherit;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        .section-item:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+        .section-item:hover .badge {
+            background: white;
+            color: var(--primary);
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🎓 합격 패스</h1>
+            <h1>🎓 합격 패스 1000</h1>
             <button onclick="toggleTheme()" class="theme-toggle">🌙</button>
         </header>
 
-        <section>
-            <h2 style="margin-bottom: 2rem;">준비하실 시험을 선택하세요</h2>
-            <div class="grid">
-                <a href="quiz.html?exam=cim" class="exam-card">
-                    <h3>📈 투자자산운용사</h3>
-                    <p>집합투자재산, 신탁재산 또는 투자자문자산을 운용하는 전문가</p>
-                </a>
-                <a href="quiz.html?exam=fia" class="exam-card">
-                    <h3>📊 금융투자분석사</h3>
-                    <p>금융투자상품의 가치를 분석하여 투자판단을 제공하는 전문가</p>
-                </a>
-                <a href="quiz.html?exam=crea" class="exam-card">
-                    <h3>🏠 공인중개사</h3>
-                    <p>부동산 중개대상물에 대하여 거래당사자간의 매매·교환·임대차 기타 권리의 득실변경에 관한 행위를 알선·중개하는 전문가</p>
-                </a>
-            </div>
-        </section>
+        <section id="exam-grid" class="grid"></section>
     </div>
 
+    <script src="questions.js"></script>
     <script>
-        function toggleTheme() {
-            const body = document.body;
-            const current = body.getAttribute('data-theme');
-            if (current === 'dark') {
-                body.removeAttribute('data-theme');
-                document.querySelector('.theme-toggle').textContent = '🌙';
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                document.querySelector('.theme-toggle').textContent = '☀️';
+        function renderExams() {
+            const grid = document.getElementById('exam-grid');
+            for (let key in window.examData) {
+                const exam = window.examData[key];
+                const totalQ = exam.sections.reduce((acc, s) => acc + s.questions.length, 0);
+                
+                const card = document.createElement('div');
+                card.className = 'exam-card';
+                card.style.cursor = 'default';
+                
+                let sectionsHtml = exam.sections.map(s => `
+                    <a href="quiz.html?exam=${key}&section=${s.id}" class="section-item">
+                        <span>${s.name}</span>
+                        <span class="badge">${s.questions.length}문항</span>
+                    </a>
+                `).join('');
+
+                card.innerHTML = `
+                    <h3>${exam.title}</h3>
+                    <p>총 ${totalQ}문항 수록</p>
+                    <div class="section-list">
+                        <a href="quiz.html?exam=${key}&section=all" class="section-item" style="font-weight: bold; background: rgba(79, 70, 229, 0.1);">
+                            <span>전체 랜덤 풀기</span>
+                            <span class="badge">ALL</span>
+                        </a>
+                        ${sectionsHtml}
+                    </div>
+                `;
+                grid.appendChild(card);
             }
         }
+
+        function toggleTheme() {
+            const body = document.body;
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+            }
+        }
+
+        renderExams();
     </script>
 </body>
 </html>
