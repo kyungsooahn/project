@@ -164,3 +164,50 @@ button.primary {
     border-color: var(--primary);
     background: rgba(79, 70, 229, 0.05);
 }
+
+footer {
+    margin-top: 5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--secondary);
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.footer-links a {
+    color: var(--secondary);
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.hero-section {
+    background: var(--card);
+    padding: 2.5rem;
+    border-radius: 1rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    line-height: 1.6;
+}
+
+.hero-section h2 {
+    margin-top: 0;
+    color: var(--primary);
+}
+
+.content-page {
+    background: var(--card);
+    padding: 2.5rem;
+    border-radius: 1rem;
+    line-height: 1.8;
+}
