@@ -6,6 +6,18 @@
     <title>합격 패스 - 1000제 마스터 🎓</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        .category-group {
+            margin-bottom: 3rem;
+        }
+        .category-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
         .section-list {
             margin-top: 1rem;
             display: flex;
@@ -28,16 +40,31 @@
             background: var(--primary);
             color: white;
         }
-        .badge {
-            background: var(--primary);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
+        .stats-badge {
+            display: flex;
+            gap: 0.5rem;
             font-size: 0.75rem;
         }
-        .section-item:hover .badge {
-            background: white;
-            color: var(--primary);
+        .badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: white;
+        }
+        .badge-q { background: var(--secondary); }
+        .badge-wrong { background: var(--danger); }
+        .badge-progress { background: var(--success); }
+        
+        .progress-mini {
+            width: 100%;
+            height: 4px;
+            background: #eee;
+            margin-top: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-mini-fill {
+            height: 100%;
+            background: var(--success);
         }
     </style>
 </head>
@@ -51,37 +78,75 @@
             </div>
         </header>
 
-        <section id="exam-grid" class="grid"></section>
+        <div id="finance-section" class="category-group">
+            <h2 class="category-title">💰 금융 자격증</h2>
+            <div id="finance-grid" class="grid"></div>
+        </div>
+
+        <div id="property-section" class="category-group">
+            <h2 class="category-title">🏠 부동산 자격증</h2>
+            <div id="property-grid" class="grid"></div>
+        </div>
     </div>
 
     <script src="questions.js"></script>
     <script>
+        const WRONG_KEY = 'wrong_questions';
+        const PROGRESS_KEY = 'progress_data';
+
+        function getStats() {
+            const wrongs = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
+            const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+            return { wrongs, progress };
+        }
+
         function renderExams() {
-            const grid = document.getElementById('exam-grid');
-            grid.innerHTML = '';
+            const financeGrid = document.getElementById('finance-grid');
+            const propertyGrid = document.getElementById('property-grid');
+            const { wrongs, progress } = getStats();
+
+            financeGrid.innerHTML = '';
+            propertyGrid.innerHTML = '';
+
+            const categories = {
+                finance: ['cim', 'fia'],
+                property: ['crea1', 'crea2']
+            };
+
             for (let key in window.examData) {
                 const exam = window.examData[key];
-                const totalQ = exam.sections.reduce((acc, s) => acc + s.questions.length, 0);
+                const grid = categories.finance.includes(key) ? financeGrid : propertyGrid;
                 
                 const card = document.createElement('div');
                 card.className = 'exam-card';
                 card.style.cursor = 'default';
                 
-                let sectionsHtml = exam.sections.map(s => `
-                    <a href="quiz.html?exam=${key}&section=${s.id}" class="section-item">
-                        <span>${s.name}</span>
-                        <span class="badge">${s.questions.length}</span>
-                    </a>
-                `).join('');
+                let sectionsHtml = exam.sections.map(s => {
+                    const sectionWrongCount = wrongs.filter(w => w.examKey === key && w.sectionId === s.id).length;
+                    const sectionCorrectCount = progress[`${key}_${s.id}`] || 0;
+                    const totalQ = s.questions.length;
+                    const percent = Math.round((sectionCorrectCount / totalQ) * 100);
+
+                    return `
+                        <a href="quiz.html?exam=${key}&section=${s.id}" class="section-item" style="flex-direction: column; align-items: flex-start;">
+                            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                                <span>${s.name}</span>
+                                <div class="stats-badge">
+                                    ${sectionWrongCount > 0 ? `<span class="badge badge-wrong">오답 ${sectionWrongCount}</span>` : ''}
+                                    <span class="badge badge-progress">${percent}%</span>
+                                    <span class="badge badge-q">${totalQ}</span>
+                                </div>
+                            </div>
+                            <div class="progress-mini">
+                                <div class="progress-mini-fill" style="width: ${percent}%"></div>
+                            </div>
+                        </a>
+                    `;
+                }).join('');
 
                 card.innerHTML = `
                     <h3>${exam.title}</h3>
-                    <p>총 ${totalQ}문항 반복 학습</p>
                     <div class="section-list">
-                        <a href="quiz.html?exam=${key}&section=all" class="section-item" style="font-weight: bold; background: rgba(79, 70, 229, 0.1);">
-                            <span>전체 랜덤 풀기</span>
-                            <span class="badge">ALL</span>
-                        </a>
                         ${sectionsHtml}
                     </div>
                 `;

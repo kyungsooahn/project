@@ -139,6 +139,21 @@
             }
         }
 
+        function saveProgress(isCorrect) {
+            if (!isCorrect) return;
+            
+            const PROGRESS_KEY = 'progress_data';
+            let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+            const key = `${examKey}_${sectionId}`;
+            
+            // 이전에 이 문제를 맞힌 적이 있는지 추적하려면 더 복잡한 구조가 필요하지만,
+            // 간단하게 정답 수를 누적하는 방식으로 구현 (실제 서비스에서는 문제 ID별 정답 여부 저장 권장)
+            if (!progress[key]) progress[key] = 0;
+            progress[key] += 1;
+            
+            localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+        }
+
         function checkAnswer(idx) {
             if (answered) return;
             answered = true;
@@ -149,6 +164,7 @@
             if (idx === q.answer) {
                 buttons[idx].classList.add('correct');
                 score++;
+                saveProgress(true); // 정답 저장
             } else {
                 buttons[idx].classList.add('wrong');
                 buttons[q.answer].classList.add('correct');
