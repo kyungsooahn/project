@@ -3,217 +3,281 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>로또 추첨기 🎰</title>
+<title>투자자산운용사(CIM) 합격 노드 📝</title>
 
 <style>
 :root {
-  --bg-color: #eef6ff;
-  --text-color: #333;
-  --container-bg: transparent;
-  --button-bg: #ff5a3c;
-  --button-hover: #e04b30;
-  --machine-gradient-start: #ffffff;
-  --machine-gradient-end: #d9e6ff;
-  --machine-border: #777;
-  --toggle-btn-bg: #ddd;
-  --toggle-btn-text: #333;
+  --bg-color: #f8f9fa;
+  --text-color: #212529;
+  --card-bg: #ffffff;
+  --primary-color: #007bff;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --border-color: #dee2e6;
 }
 
 [data-theme="dark"] {
-  --bg-color: #1a1a1a;
-  --text-color: #f0f0f0;
-  --container-bg: #2a2a2a;
-  --button-bg: #ff7b63;
-  --button-hover: #ff5a3c;
-  --machine-gradient-start: #3a3a3a;
-  --machine-gradient-end: #1a1a1a;
-  --machine-border: #555;
-  --toggle-btn-bg: #444;
-  --toggle-btn-text: #fff;
+  --bg-color: #121212;
+  --text-color: #e9ecef;
+  --card-bg: #1e1e1e;
+  --primary-color: #375a7f;
+  --border-color: #444;
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
-  text-align: center;
   margin: 0;
-  padding: 40px;
-  transition: background-color 0.3s, color 0.3s;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .container {
-  max-width: 800px;
-  margin: auto;
-  padding: 20px;
-  background-color: var(--container-bg);
-  border-radius: 16px;
-  transition: background-color 0.3s;
+  width: 100%;
+  max-width: 600px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
 .theme-toggle {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  padding: 10px 20px;
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  padding: 5px 12px;
   border-radius: 20px;
-  border: none;
-  background-color: var(--toggle-btn-bg);
-  color: var(--toggle-btn-text);
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s, color 0.3s;
 }
 
-button.draw-btn {
-  padding: 14px 28px;
-  font-size: 16px;
+.quiz-card {
+  background-color: var(--card-bg);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: 1px solid var(--border-color);
+  margin-bottom: 20px;
+}
+
+.question-num {
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.question-text {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.options-list {
+  list-style: none;
+  padding: 0;
+}
+
+.option-item {
+  padding: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.option-item:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.option-item.correct {
+  background-color: rgba(40, 167, 69, 0.2);
+  border-color: var(--success-color);
+}
+
+.option-item.wrong {
+  background-color: rgba(220, 53, 69, 0.2);
+  border-color: var(--danger-color);
+}
+
+.explanation {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: rgba(0,0,0,0.03);
+  border-radius: 8px;
+  display: none;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.next-btn {
+  width: 100%;
+  padding: 15px;
+  background-color: var(--primary-color);
+  color: white;
   border: none;
   border-radius: 8px;
-  background-color: var(--button-bg);
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button.draw-btn:hover {
-  background-color: var(--button-hover);
-}
-
-.machine {
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  margin: 30px auto;
-  background: radial-gradient(circle at 30% 30%, var(--machine-gradient-start), var(--machine-gradient-end));
-  border: 6px solid var(--machine-border);
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.3s;
-}
-
-.mixing-ball {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  position: absolute;
-  animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg) translateX(80px) rotate(0deg); }
-  100% { transform: rotate(360deg) translateX(80px) rotate(-360deg); }
-}
-
-.result-set {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 20px;
-  flex-wrap: wrap;
-}
-
-.ball {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 1rem;
   font-weight: bold;
-  font-size: 18px;
-  color: #333;
-  background: gold;
-  animation: pop 0.5s ease;
+  cursor: pointer;
+  display: none;
 }
 
-@keyframes pop {
-  0% { transform: scale(0); }
-  80% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+.score-screen {
+  text-align: center;
+  display: none;
+}
+
+.restart-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
 </style>
 </head>
-
 <body>
 
-<button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">다크 모드 🌙</button>
-
 <div class="container">
-  <h1>🎰 로또 추첨기</h1>
-  <p>실제 추첨기처럼 공이 섞인 후 번호가 나옵니다</p>
-  <button class="draw-btn" onclick="startDraw()">추첨 시작</button>
-  <div class="machine" id="machine"></div>
-  <div id="results"></div>
+  <header>
+    <h2>📖 투운사 벼락치기</h2>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙</button>
+  </header>
+
+  <div id="quiz-area">
+    <div class="quiz-card">
+      <div class="question-num" id="q-num">문제 1/3</div>
+      <div class="question-text" id="q-text">질문 내용이 여기에 표시됩니다.</div>
+      <div class="options-list" id="options">
+        <!-- 보기가 여기에 생성됩니다 -->
+      </div>
+      <div class="explanation" id="explanation">
+        <strong>💡 해설:</strong> <span id="exp-text"></span>
+      </div>
+    </div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">다음 문제</button>
+  </div>
+
+  <div class="score-screen" id="score-screen">
+    <h3>🎉 학습 완료!</h3>
+    <p id="final-score">당신의 점수는 0/0입니다.</p>
+    <button class="restart-btn" onclick="initQuiz()">다시 풀기</button>
+  </div>
 </div>
 
 <script>
+const quizData = [
+  {
+    question: "자본시장법상 전문투자자에 해당하지 않는 것은?",
+    options: ["국가", "한국은행", "지방자치단체", "모든 일반법인"],
+    answer: 3,
+    explanation: "일반법인은 별도의 요건(금융투자상품 잔고 등)을 갖추어 지정 절차를 거쳐야 전문투자자가 될 수 있습니다. 모든 일반법인이 당연히 전문투자자인 것은 아닙니다."
+  },
+  {
+    question: "다음 중 파생상품의 위험 지표인 '델타(Delta)'의 의미는?",
+    options: ["기초자산 가격 변화에 따른 옵션 가격 변화", "시간 경과에 따른 옵션 가격 변화", "변동성 변화에 따른 옵션 가격 변화", "이자율 변화에 따른 옵션 가격 변화"],
+    answer: 0,
+    explanation: "델타는 기초자산 가격이 1단위 변할 때 옵션 가격이 얼마나 변하는지를 나타내는 지표입니다."
+  },
+  {
+    question: "투자자산운용사의 직무윤리 중 '신의성실의 원칙'에 대한 설명으로 옳은 것은?",
+    options: ["자신의 이익을 최우선으로 해야 한다.", "고객의 이익을 보호하기 위해 최선을 다해야 한다.", "법규만 준수하면 윤리적 책임은 없다.", "회사의 이익을 위해 고객 정보를 활용할 수 있다."],
+    answer: 1,
+    explanation: "신의성실의 원칙은 금융소비자의 이익을 보호하기 위해 선량한 관리자의 주의의무를 다해야 함을 의미합니다."
+  }
+];
+
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+function initQuiz() {
+  currentIdx = 0;
+  score = 0;
+  document.getElementById("quiz-area").style.display = "block";
+  document.getElementById("score-screen").style.display = "none";
+  showQuestion();
+}
+
+function showQuestion() {
+  answered = false;
+  const q = quizData[currentIdx];
+  document.getElementById("q-num").textContent = `문제 ${currentIdx + 1}/${quizData.length}`;
+  document.getElementById("q-text").textContent = q.question;
+  document.getElementById("explanation").style.display = "none";
+  document.getElementById("next-btn").style.display = "none";
+  
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+  
+  q.options.forEach((opt, i) => {
+    const div = document.createElement("div");
+    div.className = "option-item";
+    div.textContent = `${i + 1}. ${opt}`;
+    div.onclick = () => checkAnswer(i);
+    optionsDiv.appendChild(div);
+  });
+}
+
+function checkAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  
+  const q = quizData[currentIdx];
+  const items = document.querySelectorAll(".option-item");
+  
+  if (idx === q.answer) {
+    items[idx].classList.add("correct");
+    score++;
+  } else {
+    items[idx].classList.add("wrong");
+    items[q.answer].classList.add("correct");
+  }
+  
+  document.getElementById("exp-text").textContent = q.explanation;
+  document.getElementById("explanation").style.display = "block";
+  document.getElementById("next-btn").style.display = "block";
+}
+
+function nextQuestion() {
+  currentIdx++;
+  if (currentIdx < quizData.length) {
+    showQuestion();
+  } else {
+    showScore();
+  }
+}
+
+function showScore() {
+  document.getElementById("quiz-area").style.display = "none";
+  document.getElementById("score-screen").style.display = "block";
+  document.getElementById("final-score").textContent = `총 ${quizData.length}문제 중 ${score}문제를 맞혔습니다!`;
+}
+
 function toggleTheme() {
   const body = document.body;
   const btn = document.getElementById("theme-btn");
-  const currentTheme = body.getAttribute("data-theme");
-  
-  if (currentTheme === "dark") {
+  if (body.getAttribute("data-theme") === "dark") {
     body.removeAttribute("data-theme");
-    btn.textContent = "다크 모드 🌙";
+    btn.textContent = "🌙";
   } else {
     body.setAttribute("data-theme", "dark");
-    btn.textContent = "일반 모드 ☀️";
+    btn.textContent = "☀️";
   }
 }
 
-function getLottoNumbers() {
-  let set = new Set();
-  while (set.size < 6) {
-    set.add(Math.floor(Math.random() * 45) + 1);
-  }
-  return [...set].sort((a, b) => a - b);
-}
-
-function randomColor() {
-  const colors = ["#ffd700", "#ff6b6b", "#6bcB77", "#4d96ff", "#ff9f1c"];
-  return colors[Math.floor(Math.random() * colors.length)];
-}
-
-function createMixingBalls() {
-  const machine = document.getElementById("machine");
-  machine.innerHTML = "";
-  for (let i = 0; i < 10; i++) {
-    let ball = document.createElement("div");
-    ball.className = "mixing-ball";
-    ball.style.background = randomColor();
-    ball.style.left = "100px";
-    ball.style.top = "100px";
-    ball.style.animationDuration = (1.5 + Math.random()) + "s";
-    machine.appendChild(ball);
-  }
-}
-
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
-
-async function startDraw() {
-  const results = document.getElementById("results");
-  results.innerHTML = "";
-  for (let s = 0; s < 5; s++) {
-    createMixingBalls();
-    await sleep(2000);
-    const nums = getLottoNumbers();
-    const setDiv = document.createElement("div");
-    setDiv.className = "result-set";
-    results.appendChild(setDiv);
-    for (let n of nums) {
-      await sleep(500);
-      let ball = document.createElement("div");
-      ball.className = "ball";
-      ball.style.background = randomColor();
-      ball.textContent = n;
-      setDiv.appendChild(ball);
-    }
-    await sleep(800);
-  }
-}
+// 초기화
+initQuiz();
 </script>
 
 </body>
