@@ -1,14 +1,196 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로또 추첨기 🎰</title>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+background:#eef6ff;
+text-align:center;
+margin:0;
+padding:40px;
+}
+
+.container{
+max-width:800px;
+margin:auto;
+}
+
+button{
+padding:14px 28px;
+font-size:16px;
+border:none;
+border-radius:8px;
+background:#ff5a3c;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#e04b30;
+}
+
+.machine{
+width:220px;
+height:220px;
+border-radius:50%;
+margin:30px auto;
+background:radial-gradient(circle at 30% 30%, #ffffff, #d9e6ff);
+border:6px solid #777;
+position:relative;
+overflow:hidden;
+}
+
+.mixing-ball{
+width:24px;
+height:24px;
+border-radius:50%;
+position:absolute;
+animation:spin 2s linear infinite;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg) translateX(80px) rotate(0deg);}
+100%{transform:rotate(360deg) translateX(80px) rotate(-360deg);}
+}
+
+.result-set{
+display:flex;
+justify-content:center;
+gap:10px;
+margin:20px;
+flex-wrap:wrap;
+}
+
+.ball{
+width:50px;
+height:50px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:bold;
+font-size:18px;
+color:#333;
+background:gold;
+animation:pop 0.5s ease;
+}
+
+@keyframes pop{
+0%{transform:scale(0);}
+80%{transform:scale(1.2);}
+100%{transform:scale(1);}
+}
+
+</style>
 </head>
+
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+
+<div class="container">
+
+<h1>🎰 로또 추첨기</h1>
+<p>실제 추첨기처럼 공이 섞인 후 번호가 나옵니다</p>
+
+<button onclick="startDraw()">추첨 시작</button>
+
+<div class="machine" id="machine"></div>
+
+<div id="results"></div>
+
+</div>
+
+<script>
+
+function getLottoNumbers(){
+
+let set=new Set();
+
+while(set.size<6){
+set.add(Math.floor(Math.random()*45)+1);
+}
+
+return [...set].sort((a,b)=>a-b);
+}
+
+function randomColor(){
+
+const colors=[
+"#ffd700","#ff6b6b","#6bcB77","#4d96ff","#ff9f1c"
+];
+
+return colors[Math.floor(Math.random()*colors.length)];
+}
+
+function createMixingBalls(){
+
+const machine=document.getElementById("machine");
+
+machine.innerHTML="";
+
+for(let i=0;i<10;i++){
+
+let ball=document.createElement("div");
+ball.className="mixing-ball";
+ball.style.background=randomColor();
+
+ball.style.left="100px";
+ball.style.top="100px";
+
+ball.style.animationDuration=(1.5+Math.random())+"s";
+
+machine.appendChild(ball);
+
+}
+
+}
+
+function sleep(ms){
+return new Promise(r=>setTimeout(r,ms));
+}
+
+async function startDraw(){
+
+const results=document.getElementById("results");
+results.innerHTML="";
+
+for(let s=0;s<5;s++){
+
+createMixingBalls();
+
+await sleep(2000);
+
+const nums=getLottoNumbers();
+
+const setDiv=document.createElement("div");
+setDiv.className="result-set";
+
+results.appendChild(setDiv);
+
+for(let n of nums){
+
+await sleep(500);
+
+let ball=document.createElement("div");
+ball.className="ball";
+ball.style.background=randomColor();
+ball.textContent=n;
+
+setDiv.appendChild(ball);
+
+}
+
+await sleep(800);
+
+}
+
+}
+
+</script>
+
 </body>
 </html>
