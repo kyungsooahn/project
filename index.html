@@ -71,7 +71,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎓 합격 패스 1000</h1>
+            <h1>🎓 합격 패스</h1>
             <div style="display: flex; gap: 0.5rem;">
                 <button onclick="location.href='review.html'" class="theme-toggle" title="오답 노트">📝</button>
                 <button onclick="toggleTheme()" class="theme-toggle">🌙</button>
@@ -95,14 +95,20 @@
         const PROGRESS_KEY = 'progress_data';
 
         function getStats() {
-            const wrongs = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
-            const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
-            return { wrongs, progress };
+            try {
+                const wrongs = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
+                const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+                return { wrongs, progress };
+            } catch (e) {
+                return { wrongs: [], progress: {} };
+            }
         }
 
         function renderExams() {
             const financeGrid = document.getElementById('finance-grid');
             const propertyGrid = document.getElementById('property-grid');
+            if (!financeGrid || !propertyGrid) return;
+
             const { wrongs, progress } = getStats();
 
             financeGrid.innerHTML = '';
@@ -112,6 +118,11 @@
                 finance: ['cim', 'fia'],
                 property: ['crea1', 'crea2']
             };
+
+            if (!window.examData) {
+                console.error("examData not found!");
+                return;
+            }
 
             for (let key in window.examData) {
                 const exam = window.examData[key];
@@ -124,8 +135,8 @@
                 let sectionsHtml = exam.sections.map(s => {
                     const sectionWrongCount = wrongs.filter(w => w.examKey === key && w.sectionId === s.id).length;
                     const sectionCorrectCount = progress[`${key}_${s.id}`] || 0;
-                    const totalQ = s.questions.length;
-                    const percent = Math.round((sectionCorrectCount / totalQ) * 100);
+                    const totalQ = s.questions ? s.questions.length : 0;
+                    const percent = totalQ > 0 ? Math.round((sectionCorrectCount / totalQ) * 100) : 0;
 
                     return `
                         <a href="quiz.html?exam=${key}&section=${s.id}" class="section-item" style="flex-direction: column; align-items: flex-start;">
@@ -163,7 +174,8 @@
             }
         }
 
-        renderExams();
+        // Initialize
+        window.addEventListener('DOMContentLoaded', renderExams);
     </script>
 </body>
 </html>
