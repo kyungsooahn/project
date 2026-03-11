@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>시험 학습 모드</title>
+    <meta name="google-adsense-account" content="ca-pub-1480804086381400">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1480804086381400"
+     crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -45,14 +48,26 @@
             </div>
         </div>
     </div>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const examKey = urlParams.get('exam');
+    const sectionId = urlParams.get('section');
 
-    <script src="questions.js"></script>
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const examKey = urlParams.get('exam');
-        const sectionId = urlParams.get('section');
+    // Dynamically load the correct data file
+    const dataScript = document.createElement('script');
+    dataScript.src = `data/${examKey}.js`;
+    dataScript.onload = () => {
+        init();
+    };
+    dataScript.onerror = () => {
+        alert('데이터를 불러오는데 실패했습니다.');
+        location.href = 'index.html';
+    };
+    document.head.appendChild(dataScript);
 
-        let questions = [];
+    let questions = [];
+...
+
         let currentIdx = 0;
         let score = 0;
         let answered = false;
