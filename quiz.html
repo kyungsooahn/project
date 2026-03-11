@@ -48,34 +48,38 @@
             </div>
         </div>
     </div>
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const examKey = urlParams.get('exam');
-    const sectionId = urlParams.get('section');
 
-    // Dynamically load the correct data file
-    const dataScript = document.createElement('script');
-    dataScript.src = `data/${examKey}.js`;
-    dataScript.onload = () => {
-        init();
-    };
-    dataScript.onerror = () => {
-        alert('데이터를 불러오는데 실패했습니다.');
-        location.href = 'index.html';
-    };
-    document.head.appendChild(dataScript);
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const examKey = urlParams.get('exam');
+        const sectionId = urlParams.get('section');
 
-    let questions = [];
-...
-
+        let questions = [];
         let currentIdx = 0;
         let score = 0;
         let answered = false;
 
+        // Dynamically load the correct data file
+        if (examKey) {
+            const dataScript = document.createElement('script');
+            dataScript.src = `data/${examKey}.js`;
+            dataScript.onload = () => {
+                init();
+            };
+            dataScript.onerror = () => {
+                alert('데이터를 불러오는데 실패했습니다.');
+                location.href = 'index.html';
+            };
+            document.head.appendChild(dataScript);
+        } else {
+            alert('잘못된 접근입니다.');
+            location.href = 'index.html';
+        }
+
         function init() {
             const examData = window.examData[examKey];
             if (!examData) {
-                alert('잘못된 접근입니다.');
+                alert('시험 데이터를 찾을 수 없습니다.');
                 location.href = 'index.html';
                 return;
             }
@@ -83,8 +87,7 @@
             document.getElementById('exam-title').textContent = examData.title;
 
             if (sectionId === 'all') {
-                document.getElementById('section-title').textContent = "전체 랜덤 1000제";
-                // 모든 섹션의 문제 통합 및 셔플
+                document.getElementById('section-title').textContent = "전체 랜덤 학습";
                 examData.sections.forEach(s => questions.push(...s.questions));
                 shuffleArray(questions);
             } else {
@@ -96,7 +99,13 @@
                 }
                 document.getElementById('section-title').textContent = section.name;
                 questions = [...section.questions];
-                shuffleArray(questions); // 섹션 내에서도 랜덤하게
+                shuffleArray(questions);
+            }
+
+            if (questions.length === 0) {
+                alert('문제가 없습니다.');
+                location.href = 'index.html';
+                return;
             }
 
             showQuestion();
@@ -136,11 +145,9 @@
             const WRONG_KEY = 'wrong_questions';
             let wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
             
-            // 현재 섹션 정보 가져오기
             const examData = window.examData[examKey];
             const section = examData.sections.find(s => s.id === sectionId) || { name: '전체 랜덤', id: 'all' };
 
-            // 중복 체크 (질문 텍스트 기준)
             if (!wrongQuestions.some(item => item.q === q.q)) {
                 wrongQuestions.push({
                     ...q,
@@ -161,8 +168,6 @@
             let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
             const key = `${examKey}_${sectionId}`;
             
-            // 이전에 이 문제를 맞힌 적이 있는지 추적하려면 더 복잡한 구조가 필요하지만,
-            // 간단하게 정답 수를 누적하는 방식으로 구현 (실제 서비스에서는 문제 ID별 정답 여부 저장 권장)
             if (!progress[key]) progress[key] = 0;
             progress[key] += 1;
             
@@ -179,11 +184,11 @@
             if (idx === q.answer) {
                 buttons[idx].classList.add('correct');
                 score++;
-                saveProgress(true); // 정답 저장
+                saveProgress(true);
             } else {
                 buttons[idx].classList.add('wrong');
                 buttons[q.answer].classList.add('correct');
-                saveWrongQuestion(q); // 오답 저장
+                saveWrongQuestion(q);
             }
 
             document.getElementById('explanation-text').textContent = q.exp;
@@ -208,8 +213,6 @@
             document.getElementById('final-score').textContent = 
                 `총 ${questions.length}문제 중 ${score}문제를 맞혔습니다!`;
         }
-
-        init();
     </script>
 </body>
 </html>
