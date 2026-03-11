@@ -3,9 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오답 노트 📝</title>
+    <title>섹션별 오답 노트 📝</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        .filter-container {
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        .section-group {
+            margin-bottom: 3rem;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
         .wrong-item {
             background: var(--card);
             padding: 1.5rem;
@@ -40,6 +76,14 @@
             padding: 4rem 2rem;
             color: var(--secondary);
         }
+        .exam-title-badge {
+            font-size: 0.7rem;
+            background: var(--secondary);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -49,18 +93,68 @@
             <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
         </header>
 
-        <div id="wrong-list"></div>
+        <div id="filter-bar" class="filter-container"></div>
+        <div id="wrong-list-container"></div>
     </div>
 
     <script>
         const WRONG_KEY = 'wrong_questions';
+        let currentFilter = 'all';
+
+        function getGroupedQuestions() {
+            const wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
+            const groups = {};
+
+            wrongQuestions.forEach((q, index) => {
+                // 기존 데이터에 sectionName이 없을 경우를 대비한 기본값
+                const examTitle = q.examTitle || '기타';
+                const sectionName = q.sectionName || '미분류';
+                const groupKey = `${examTitle} > ${sectionName}`;
+
+                if (!groups[groupKey]) {
+                    groups[groupKey] = {
+                        examTitle: examTitle,
+                        sectionName: sectionName,
+                        questions: []
+                    };
+                }
+                groups[groupKey].questions.push({ ...q, originalIndex: index });
+            });
+
+            return groups;
+        }
+
+        function renderFilters(groups) {
+            const filterBar = document.getElementById('filter-bar');
+            const keys = Object.keys(groups);
+            
+            if (keys.length === 0) {
+                filterBar.innerHTML = '';
+                return;
+            }
+
+            let html = `<button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">전체보기</button>`;
+            
+            keys.forEach(key => {
+                html += `<button class="filter-btn ${currentFilter === key ? 'active' : ''}" onclick="setFilter('${key}')">${key}</button>`;
+            });
+
+            filterBar.innerHTML = html;
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            renderWrongQuestions();
+        }
 
         function renderWrongQuestions() {
-            const list = document.getElementById('wrong-list');
-            const wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
+            const container = document.getElementById('wrong-list-container');
+            const groups = getGroupedQuestions();
             
-            if (wrongQuestions.length === 0) {
-                list.innerHTML = `
+            renderFilters(groups);
+
+            if (Object.keys(groups).length === 0) {
+                container.innerHTML = `
                     <div class="empty-state">
                         <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
                         <p>틀린 문제가 없습니다!<br>모두 완벽하게 마스터하셨네요.</p>
@@ -70,30 +164,46 @@
                 return;
             }
 
-            list.innerHTML = '';
-            wrongQuestions.reverse().forEach((q, idx) => {
-                const item = document.createElement('div');
-                item.className = 'wrong-item';
-                
-                const optionsHtml = q.options.map((opt, i) => `
-                    <div style="margin: 0.25rem 0; padding: 0.5rem; border-radius: 0.25rem; background: ${i === q.answer ? 'rgba(34, 197, 94, 0.1)' : 'transparent'}; border: 1px solid ${i === q.answer ? 'var(--success)' : '#eee'}">
-                        ${i + 1}. ${opt} ${i === q.answer ? '✅' : ''}
-                    </div>
-                `).join('');
+            let html = '';
+            for (const key in groups) {
+                if (currentFilter !== 'all' && currentFilter !== key) continue;
 
-                item.innerHTML = `
-                    <small class="wrong-meta">${q.examTitle} | ${new Date(q.savedAt).toLocaleDateString()}</small>
-                    <span class="wrong-q">${q.q}</span>
-                    <div class="options">
-                        ${optionsHtml}
-                    </div>
-                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.03); border-radius: 0.5rem; font-size: 0.9rem;">
-                        <strong>💡 해설:</strong> ${q.exp}
-                    </div>
-                    <button class="delete-btn" onclick="deleteWrong(${wrongQuestions.length - 1 - idx})">오답 노트에서 삭제</button>
+                const group = groups[key];
+                html += `
+                    <div class="section-group">
+                        <div class="section-header">
+                            <span class="exam-title-badge">${group.examTitle}</span>
+                            <h2>${group.sectionName}</h2>
+                            <small style="margin-left: auto; color: var(--secondary);">${group.questions.length}문항</small>
+                        </div>
                 `;
-                list.appendChild(item);
-            });
+
+                group.questions.reverse().forEach((q) => {
+                    const optionsHtml = q.options.map((opt, i) => `
+                        <div style="margin: 0.25rem 0; padding: 0.5rem; border-radius: 0.25rem; background: ${i === q.answer ? 'rgba(34, 197, 94, 0.1)' : 'transparent'}; border: 1px solid ${i === q.answer ? 'var(--success)' : '#eee'}">
+                            ${i + 1}. ${opt} ${i === q.answer ? '✅' : ''}
+                        </div>
+                    `).join('');
+
+                    html += `
+                        <div class="wrong-item">
+                            <small class="wrong-meta">${new Date(q.savedAt).toLocaleDateString()}</small>
+                            <span class="wrong-q">${q.q}</span>
+                            <div class="options">
+                                ${optionsHtml}
+                            </div>
+                            <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.03); border-radius: 0.5rem; font-size: 0.9rem;">
+                                <strong>💡 해설:</strong> ${q.exp}
+                            </div>
+                            <button class="delete-btn" onclick="deleteWrong(${q.originalIndex})">오답 노트에서 삭제</button>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
         }
 
         function deleteWrong(originalIdx) {
@@ -106,12 +216,6 @@
         }
 
         renderWrongQuestions();
-
-        // Dark theme support
-        if (localStorage.getItem('theme') === 'dark' || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            // This is just a simple check, the index.html logic is separate
-            // For a real app, theme state should be consistent
-        }
     </script>
 </body>
 </html>
