@@ -45,7 +45,10 @@
     <div class="container">
         <header>
             <h1>🎓 합격 패스 1000</h1>
-            <button onclick="toggleTheme()" class="theme-toggle">🌙</button>
+            <div style="display: flex; gap: 0.5rem;">
+                <button onclick="location.href='review.html'" class="theme-toggle" title="오답 노트">📝</button>
+                <button onclick="toggleTheme()" class="theme-toggle">🌙</button>
+            </div>
         </header>
 
         <section id="exam-grid" class="grid"></section>
