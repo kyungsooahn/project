@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시험 학습 모드</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="exam-title">시험 로딩중...</h1>
+            <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
+        </header>
+
+        <div id="quiz-container">
+            <div class="quiz-header">
+                <span id="q-number">문제 1/100</span>
+                <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+            </div>
+
+            <h2 id="question-text" style="margin-bottom: 2rem; line-height: 1.4;">질문 내용</h2>
+
+            <div id="options-container"></div>
+
+            <div class="explanation" id="explanation-box">
+                <strong style="display: block; margin-bottom: 0.5rem; color: var(--primary);">💡 정답 및 해설</strong>
+                <p id="explanation-text"></p>
+            </div>
+
+            <div class="nav-btns">
+                <button class="primary" id="next-btn" onclick="nextQuestion()" style="display: none;">다음 문제</button>
+            </div>
+        </div>
+
+        <div id="result-container" style="display: none; text-align: center;">
+            <h2>학습을 마쳤습니다! 🎉</h2>
+            <p id="final-score" style="font-size: 1.5rem; margin: 2rem 0;"></p>
+            <div style="display: flex; gap: 1rem;">
+                <button class="primary" onclick="location.reload()">다시 풀기</button>
+                <button class="primary" onclick="location.href='index.html'" style="background: var(--secondary);">메인으로</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const examKey = urlParams.get('exam');
+        const data = window.examData[examKey];
+
+        let currentIdx = 0;
+        let score = 0;
+        let answered = false;
+
+        function init() {
+            if (!data) {
+                alert('잘못된 접근입니다.');
+                location.href = 'index.html';
+                return;
+            }
+            document.getElementById('exam-title').textContent = data.title;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            answered = false;
+            const q = data.questions[currentIdx];
+            document.getElementById('q-number').textContent = `문제 ${currentIdx + 1}/${data.questions.length}`;
+            document.getElementById('question-text').textContent = q.question;
+            document.getElementById('explanation-box').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+            
+            const progress = ((currentIdx) / data.questions.length) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            q.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = `${i + 1}. ${opt}`;
+                btn.onclick = () => checkAnswer(i);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(idx) {
+            if (answered) return;
+            answered = true;
+
+            const q = data.questions[currentIdx];
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            if (idx === q.answer) {
+                buttons[idx].classList.add('correct');
+                score++;
+            } else {
+                buttons[idx].classList.add('wrong');
+                buttons[q.answer].classList.add('correct');
+            }
+
+            document.getElementById('explanation-text').textContent = q.explanation;
+            document.getElementById('explanation-box').style.display = 'block';
+            document.getElementById('next-btn').style.display = 'block';
+            
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function nextQuestion() {
+            currentIdx++;
+            if (currentIdx < data.questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('result-container').style.display = 'block';
+            document.getElementById('final-score').textContent = 
+                `총 ${data.questions.length}문제 중 ${score}문제를 맞혔습니다!`;
+        }
+
+        init();
+    </script>
+</body>
+</html>
