@@ -1,0 +1,17 @@
+{
+  "name": "합격 패스 - 자격증 기출 마스터",
+  "short_name": "합격패스",
+  "description": "전문 자격증 합격을 위한 스마트한 문제 풀이 서비스",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135810.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

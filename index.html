@@ -13,6 +13,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>합격 패스 - 전문 자격증 기출 문제 마스터 🎓</title>
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135810.png">
+
     <meta name="description" content="투자자산운용사, 금융투자분석사, 공인중개사 자격증 합격을 위한 최적의 학습 도구. 무료 기출 문제와 오답 노트를 이용해 보세요.">
     <meta name="keywords" content="투자자산운용사, 금융투자분석사, 공인중개사, 기출문제, 자격증, 오답노트">
     <meta name="google-adsense-account" content="ca-pub-1480804086381400">
@@ -130,6 +136,15 @@
     <script src="data/crea1.js"></script>
     <script src="data/crea2.js"></script>
     <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registered!', reg))
+                    .catch(err => console.log('SW reg error:', err));
+            });
+        }
+
         const WRONG_KEY = 'wrong_questions';
         const PROGRESS_KEY = 'progress_data';
 
