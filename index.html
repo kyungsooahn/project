@@ -199,7 +199,10 @@
                 }).join('');
 
                 card.innerHTML = `
-                    <h3>${exam.title}</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">${exam.title}</h3>
+                        <a href="mock.html?exam=${key}" class="mock-btn-main" style="background: var(--primary); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; font-weight: bold;">⏱️ 실전 모의고사</a>
+                    </div>
                     <div class="section-list">
                         ${sectionsHtml}
                     </div>
