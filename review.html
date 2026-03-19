@@ -66,7 +66,6 @@
             margin-bottom: 1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             border-left: 5px solid var(--danger);
-            page-break-inside: avoid;
         }
         .wrong-q {
             font-weight: bold;
@@ -103,12 +102,11 @@
             margin-right: 0.5rem;
         }
 
-        /* PDF Download Button Style */
         .download-btn {
-            background: var(--success);
+            background: #4f46e5;
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1.2rem;
             border-radius: 0.5rem;
             font-size: 0.9rem;
             cursor: pointer;
@@ -116,19 +114,78 @@
             display: flex;
             align-items: center;
             gap: 0.4rem;
+            transition: transform 0.1s;
         }
-        .download-btn:hover {
-            opacity: 0.9;
-        }
+        .download-btn:active { transform: scale(0.98); }
 
-        /* Printing adjustments */
-        @media print {
-            .filter-container, .delete-btn, .footer-links, .theme-toggle, .download-btn, header a {
-                display: none !important;
-            }
-            body { background: white; }
-            .container { max-width: 100%; margin: 0; padding: 0; }
-            .wrong-item { box-shadow: none; border: 1px solid #eee; }
+        /* PDF 전용 숨겨진 템플릿 스타일 */
+        #pdf-template {
+            position: absolute;
+            left: -10000px;
+            top: 0;
+            width: 210mm; /* A4 Width */
+            padding: 20mm;
+            background: white;
+            color: #1a1a1a;
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+        }
+        .pdf-page-title {
+            font-size: 28pt;
+            font-weight: 800;
+            color: #4f46e5;
+            border-bottom: 3pt solid #4f46e5;
+            padding-bottom: 10pt;
+            margin-bottom: 10pt;
+            text-align: center;
+        }
+        .pdf-meta {
+            text-align: right;
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 30pt;
+        }
+        .pdf-section-title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin: 25pt 0 15pt 0;
+            padding-left: 10pt;
+            border-left: 4pt solid #4f46e5;
+        }
+        .pdf-question-card {
+            margin-bottom: 20pt;
+            padding: 15pt;
+            border: 1pt solid #eee;
+            border-radius: 8pt;
+            page-break-inside: avoid;
+        }
+        .pdf-q-text {
+            font-size: 13pt;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 12pt;
+            display: block;
+        }
+        .pdf-option {
+            font-size: 11pt;
+            padding: 6pt 10pt;
+            margin: 4pt 0;
+            border-radius: 4pt;
+        }
+        .pdf-option.correct {
+            background-color: #f0fdf4;
+            border: 1pt solid #bbf7d0;
+            color: #166534;
+            font-weight: bold;
+        }
+        .pdf-explanation {
+            margin-top: 12pt;
+            padding: 10pt;
+            background-color: #f8fafc;
+            border-radius: 6pt;
+            font-size: 10.5pt;
+            line-height: 1.6;
+            color: #334155;
         }
     </style>
 </head>
@@ -157,61 +214,95 @@
         </footer>
     </div>
 
+    <!-- PDF 생성을 위한 숨겨진 영역 -->
+    <div id="pdf-template"></div>
+
     <script>
         const WRONG_KEY = 'wrong_questions';
         let currentFilter = 'all';
 
         async function downloadPDF() {
             const btn = document.getElementById('pdf-download-btn');
-            const container = document.getElementById('wrong-list-container');
+            const template = document.getElementById('pdf-template');
+            const groups = getGroupedQuestions();
             const originalText = btn.innerText;
             
+            if (Object.keys(groups).length === 0) return;
+
             try {
-                btn.innerText = '⏳ 생성 중...';
+                btn.innerText = '⏳ 고품질 PDF 생성 중...';
                 btn.disabled = true;
 
-                // PDF 생성 시 삭제 버튼 등을 숨기기 위해 클래스 추가
-                document.body.classList.add('is-exporting');
-                
-                // 캡처 대상의 스타일을 일시적으로 조정 (배경색 등)
-                const originalBg = document.body.style.background;
-                document.body.style.background = 'white';
+                // 1. PDF 전용 HTML 생성
+                let pdfHtml = `
+                    <div class="pdf-page-title">오답 마스터 노트</div>
+                    <div class="pdf-meta">
+                        발행일: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}<br>
+                        학습자: 합격 패스 사용자
+                    </div>
+                `;
 
-                const canvas = await html2canvas(container, {
-                    scale: 2, // 해상도 향상
+                for (const key in groups) {
+                    if (currentFilter !== 'all' && currentFilter !== key) continue;
+                    const group = groups[key];
+                    
+                    pdfHtml += `<div class="pdf-section-title">${group.examTitle} &gt; ${group.sectionName}</div>`;
+                    
+                    group.questions.forEach((q, idx) => {
+                        const optionsHtml = q.options.map((opt, i) => `
+                            <div class="pdf-option ${i === q.answer ? 'correct' : ''}">
+                                ${i + 1}. ${opt} ${i === q.answer ? ' (정답)' : ''}
+                            </div>
+                        `).join('');
+
+                        pdfHtml += `
+                            <div class="pdf-question-card">
+                                <span class="pdf-q-text">문항 ${idx + 1}. ${q.q}</span>
+                                <div class="pdf-options-list">
+                                    ${optionsHtml}
+                                </div>
+                                <div class="pdf-explanation">
+                                    <strong>💡 해설:</strong> ${q.exp}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                template.innerHTML = pdfHtml;
+
+                // 2. Canvas 캡처 (배율을 높여서 선명하게)
+                const canvas = await html2canvas(template, {
+                    scale: 2,
                     useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    windowWidth: 794 // 210mm at 96dpi
                 });
 
+                // 3. PDF 저장
                 const imgData = canvas.toDataURL('image/png');
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 
-                const imgProps = pdf.getImageProperties(imgData);
                 const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = pdfWidth;
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
                 
-                // 여러 페이지 처리
-                let heightLeft = pdfHeight;
+                let heightLeft = imgHeight;
                 let position = 0;
-                const pageHeight = pdf.internal.pageSize.getHeight();
 
-                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-                heightLeft -= pageHeight;
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfHeight;
 
-                while (heightLeft >= 0) {
-                    position = heightLeft - pdfHeight;
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
                     pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-                    heightLeft -= pageHeight;
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pdfHeight;
                 }
 
-                const fileName = `오답노트_${new Date().toISOString().slice(0, 10)}.pdf`;
-                pdf.save(fileName);
-
-                document.body.style.background = originalBg;
-                document.body.classList.remove('is-exporting');
+                pdf.save(`합격패스_오답노트_${new Date().toISOString().slice(0, 10)}.pdf`);
                 
             } catch (error) {
                 console.error('PDF 생성 실패:', error);
@@ -219,6 +310,7 @@
             } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;
+                template.innerHTML = ''; // 메모리 해제
             }
         }
 
