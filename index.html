@@ -120,7 +120,12 @@
                     const sectionCorrectCount = progress[`${key}_${s.id}`] || 0;
                     const totalQ = s.questions ? s.questions.length : 0;
                     globalTotalQ += totalQ;
+                    
                     const percent = totalQ > 0 ? Math.round((sectionCorrectCount / totalQ) * 100) : 0;
+                    
+                    // 정답률 계산: 맞춘 문제 / (맞춘 문제 + 틀린 문제)
+                    const attempted = sectionCorrectCount + sectionWrongCount;
+                    const accuracy = attempted > 0 ? Math.round((sectionCorrectCount / attempted) * 100) : 0;
 
                     return `
                         <a href="quiz.html?exam=${key}&section=${s.id}" class="section-item" style="flex-direction: column; align-items: flex-start;">
@@ -128,6 +133,7 @@
                                 <span>${s.name}</span>
                                 <div class="stats-badge">
                                     ${sectionWrongCount > 0 ? `<span class="badge badge-wrong">오답 ${sectionWrongCount}</span>` : ''}
+                                    ${attempted > 0 ? `<span class="badge" style="background:var(--primary); opacity:0.9;">정답 ${accuracy}%</span>` : ''}
                                     <span class="badge badge-progress">${percent}%</span>
                                     <span class="badge badge-q">${totalQ}</span>
                                 </div>

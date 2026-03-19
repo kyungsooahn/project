@@ -177,8 +177,12 @@
 
                 exam.sections.forEach(s => {
                     const sCorrect = progress[`${key}_${s.id}`] || 0;
+                    const sWrong = wrongs.filter(w => w.examKey === key && w.sectionId === s.id).length;
                     const sTotal = s.questions ? s.questions.length : 0;
+                    
                     const sPct = sTotal > 0 ? Math.round((sCorrect / sTotal) * 100) : 0;
+                    const sAttempted = sCorrect + sWrong;
+                    const sAccuracy = sAttempted > 0 ? Math.round((sCorrect / sAttempted) * 100) : 0;
                     
                     examCorrect += sCorrect;
                     examTotal += sTotal;
@@ -188,9 +192,13 @@
 
                     sectionsHtml += `
                         <div class="section-item">
-                            <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:2px;">
                                 <strong>${s.name}</strong>
-                                <span>${sPct}% (${sCorrect}/${sTotal})</span>
+                                <span style="color:var(--stats-primary); font-weight:bold;">정답률 ${sAccuracy}%</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--secondary);">
+                                <span>성취도 ${sPct}%</span>
+                                <span>${sCorrect}/${sTotal} 문항</span>
                             </div>
                             <div class="progress-container">
                                 <div class="progress-fill" style="width:${sPct}%"></div>
