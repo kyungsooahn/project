@@ -16,6 +16,11 @@
     <meta name="google-adsense-account" content="ca-pub-1480804086381400">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1480804086381400"
      crossorigin="anonymous"></script>
+    
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <link rel="stylesheet" href="style.css">
     <style>
         .filter-container {
@@ -61,6 +66,7 @@
             margin-bottom: 1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             border-left: 5px solid var(--danger);
+            page-break-inside: avoid;
         }
         .wrong-q {
             font-weight: bold;
@@ -96,13 +102,44 @@
             border-radius: 4px;
             margin-right: 0.5rem;
         }
+
+        /* PDF Download Button Style */
+        .download-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .download-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Printing adjustments */
+        @media print {
+            .filter-container, .delete-btn, .footer-links, .theme-toggle, .download-btn, header a {
+                display: none !important;
+            }
+            body { background: white; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .wrong-item { box-shadow: none; border: 1px solid #eee; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>📝 오답 노트</h1>
-            <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
+                <h1 style="margin: 0;">📝 오답 노트</h1>
+            </div>
+            <button id="pdf-download-btn" class="download-btn" onclick="downloadPDF()">📄 PDF 다운로드</button>
         </header>
 
         <div id="filter-bar" class="filter-container"></div>
@@ -124,12 +161,72 @@
         const WRONG_KEY = 'wrong_questions';
         let currentFilter = 'all';
 
+        async function downloadPDF() {
+            const btn = document.getElementById('pdf-download-btn');
+            const container = document.getElementById('wrong-list-container');
+            const originalText = btn.innerText;
+            
+            try {
+                btn.innerText = '⏳ 생성 중...';
+                btn.disabled = true;
+
+                // PDF 생성 시 삭제 버튼 등을 숨기기 위해 클래스 추가
+                document.body.classList.add('is-exporting');
+                
+                // 캡처 대상의 스타일을 일시적으로 조정 (배경색 등)
+                const originalBg = document.body.style.background;
+                document.body.style.background = 'white';
+
+                const canvas = await html2canvas(container, {
+                    scale: 2, // 해상도 향상
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                
+                // 여러 페이지 처리
+                let heightLeft = pdfHeight;
+                let position = 0;
+                const pageHeight = pdf.internal.pageSize.getHeight();
+
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - pdfHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                const fileName = `오답노트_${new Date().toISOString().slice(0, 10)}.pdf`;
+                pdf.save(fileName);
+
+                document.body.style.background = originalBg;
+                document.body.classList.remove('is-exporting');
+                
+            } catch (error) {
+                console.error('PDF 생성 실패:', error);
+                alert('PDF 생성 중 오류가 발생했습니다.');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
         function getGroupedQuestions() {
             const wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
             const groups = {};
 
             wrongQuestions.forEach((q, index) => {
-                // 기존 데이터에 sectionName이 없을 경우를 대비한 기본값
                 const examTitle = q.examTitle || '기타';
                 const sectionName = q.sectionName || '미분류';
                 const groupKey = `${examTitle} > ${sectionName}`;
@@ -153,7 +250,10 @@
             
             if (keys.length === 0) {
                 filterBar.innerHTML = '';
+                document.getElementById('pdf-download-btn').style.display = 'none';
                 return;
+            } else {
+                document.getElementById('pdf-download-btn').style.display = 'flex';
             }
 
             let html = `<button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">전체보기</button>`;
