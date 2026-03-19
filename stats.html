@@ -7,79 +7,118 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-G99S2G82RN');
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>학습 통계 분석 📊</title>
+    <title>학습 대시보드 📊</title>
     
-    <!-- Chart.js for Statistics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <link rel="stylesheet" href="style.css">
     <style>
-        .stats-card {
-            background: var(--card);
-            padding: 2rem;
-            border-radius: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        :root {
+            --card-bg: #ffffff;
+            --stats-primary: #4f46e5;
+            --stats-secondary: #10b981;
+            --stats-accent: #f59e0b;
+            --stats-danger: #ef4444;
         }
-        #statsChart { max-width: 500px; width: 100%; margin: 2rem 0; }
-        .summary-box {
-            width: 100%;
-            padding: 1.5rem;
-            background: rgba(79, 70, 229, 0.05);
-            border-radius: 1rem;
-            border-left: 5px solid var(--primary);
-            margin-bottom: 2rem;
+        [data-theme="dark"] {
+            --card-bg: #1e293b;
         }
-        .detail-grid {
+
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            width: 100%;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
-        .detail-item {
+
+        .kpi-card {
+            background: var(--card-bg);
             padding: 1.5rem;
-            background: white;
             border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             text-align: center;
-            border: 1px solid #eee;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border-bottom: 4px solid var(--stats-primary);
+        }
+        .kpi-card:nth-child(2) { border-color: var(--stats-secondary); }
+        .kpi-card:nth-child(3) { border-color: var(--stats-accent); }
+        .kpi-card:nth-child(4) { border-color: var(--stats-danger); }
+
+        .kpi-val { display: block; font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-bottom: 0.25rem; }
+        .kpi-label { font-size: 0.85rem; color: var(--secondary); font-weight: 600; }
+
+        .main-stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 768px) {
+            .main-stats-row { grid-template-columns: 1fr; }
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .subject-breakdown {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .subject-card {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .subject-card:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+        .subject-header {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
         }
-        [data-theme="dark"] .detail-item {
-            background: #1e293b;
-            border-color: #334155;
-        }
-        .detail-val {
-            display: block;
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-        .detail-label {
-            font-size: 1rem;
-            font-weight: 600;
-            margin: 0.5rem 0;
-        }
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            display: inline-block;
+        .subject-name { font-weight: bold; font-size: 1.1rem; }
+        .subject-pct { font-weight: 800; color: var(--stats-primary); }
+
+        .section-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.5rem;
             margin-top: 0.5rem;
         }
-        .status-good { background: #dcfce7; color: #166534; }
-        .status-warn { background: #fef9c3; color: #854d0e; }
-        .status-none { background: #f1f5f9; color: #475569; }
+        .section-mini-item {
+            font-size: 0.75rem;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.02);
+            border-radius: 0.4rem;
+        }
+        .mini-progress {
+            height: 4px;
+            background: #eee;
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .mini-progress-fill { height: 100%; background: var(--stats-secondary); transition: width 0.3s; }
+
+        .mastery-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -87,22 +126,42 @@
         <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
-                <h1 style="margin: 0;">📊 학습 통계</h1>
+                <h1 style="margin: 0;">📊 학습 대시보드</h1>
             </div>
         </header>
 
-        <div class="stats-card">
-            <h2 style="margin: 0; font-size: 1.2rem;">과목별 성취도 레이더</h2>
-            <canvas id="statsChart"></canvas>
-            
-            <div id="stats-summary" class="summary-box">
-                <p style="margin: 0; font-weight: 600; color: var(--primary);">💡 학습 가이드</p>
-                <p id="summary-text" style="margin: 0.5rem 0 0 0; font-size: 0.95rem; line-height: 1.6;">
-                    각 과목의 정답률을 바탕으로 분석한 결과입니다. 70% 이상 달성 시 안정권으로 분류됩니다.
-                </p>
+        <!-- 상단 요약 카드 -->
+        <div class="dashboard-grid">
+            <div class="kpi-card">
+                <span class="kpi-val" id="kpi-total">0</span>
+                <span class="kpi-label">푼 문제 수</span>
             </div>
+            <div class="kpi-card">
+                <span class="kpi-val" id="kpi-accuracy">0%</span>
+                <span class="kpi-label">전체 정답률</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-val" id="kpi-bookmarks">0</span>
+                <span class="kpi-label">즐겨찾기</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-val" id="kpi-remains">0</span>
+                <span class="kpi-label">남은 문제</span>
+            </div>
+        </div>
 
-            <div class="detail-grid" id="detail-grid"></div>
+        <div class="main-stats-row">
+            <!-- 레이더 차트 -->
+            <div class="chart-container">
+                <h3 style="margin-top:0; font-size:1rem; color:var(--primary);">과목별 밸런스</h3>
+                <canvas id="radarChart"></canvas>
+            </div>
+            
+            <!-- 과목별 상세 분석 -->
+            <div class="subject-breakdown">
+                <h3 style="margin-top:0; font-size:1rem; color:var(--primary);">자격증별 마스터리</h3>
+                <div id="subject-list"></div>
+            </div>
         </div>
 
         <footer>
@@ -125,142 +184,124 @@
     <script>
         const WRONG_KEY = 'wrong_questions';
         const PROGRESS_KEY = 'progress_data';
+        const BOOKMARK_KEY = 'bookmarked_questions';
+        const SOLVED_KEY = 'solved_questions';
 
-        function getStats() {
-            try {
-                const wrongs = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
-                const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
-                return { wrongs, progress };
-            } catch (e) { return { wrongs: [], progress: {} }; }
+        function getMastery(pct) {
+            if (pct >= 90) return { label: '마스터', color: '#7c3aed', bg: '#f5f3ff' };
+            if (pct >= 70) return { label: '합격권', color: '#059669', bg: '#ecfdf5' };
+            if (pct >= 40) return { label: '숙련', color: '#d97706', bg: '#fffbeb' };
+            if (pct > 0) return { label: '입문', color: '#4b5563', bg: '#f9fafb' };
+            return { label: '시작전', color: '#9ca3af', bg: '#f3f4f6' };
         }
 
-        function renderStats() {
-            const { wrongs, progress } = getStats();
-            const labels = [];
-            const dataValues = [];
-            const detailGrid = document.getElementById('detail-grid');
-            
-            let bestSubject = { name: '', val: -1 };
-            let worstSubject = { name: '', val: 101 };
+        function renderDashboard() {
+            const wrongs = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
+            const solved = JSON.parse(localStorage.getItem(SOLVED_KEY) || '[]');
+            const bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]');
+            const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+
+            const totalSolvedCount = solved.length;
+            const totalWrongCount = wrongs.length;
+            const totalAttempted = totalSolvedCount + totalWrongCount;
+            const accuracy = totalAttempted > 0 ? Math.round((totalSolvedCount / totalAttempted) * 100) : 0;
+
+            document.getElementById('kpi-total').innerText = totalAttempted.toLocaleString();
+            document.getElementById('kpi-accuracy').innerText = `${accuracy}%`;
+            document.getElementById('kpi-bookmarks').innerText = bookmarks.length;
+
+            const subjectList = document.getElementById('subject-list');
+            const radarLabels = [];
+            const radarValues = [];
+            let globalTotalQuestions = 0;
 
             for (let key in window.examData) {
                 const exam = window.examData[key];
                 let examCorrect = 0;
                 let examTotal = 0;
 
+                const subjectCard = document.createElement('div');
+                subjectCard.className = 'subject-card';
+
+                let sectionsHtml = '<div class="section-mini-grid">';
                 exam.sections.forEach(s => {
-                    examCorrect += (progress[`${key}_${s.id}`] || 0);
-                    examTotal += (s.questions ? s.questions.length : 0);
+                    const sCorrect = progress[`${key}_${s.id}`] || 0;
+                    const sTotal = s.questions ? s.questions.length : 0;
+                    const sPct = sTotal > 0 ? Math.round((sCorrect / sTotal) * 100) : 0;
+                    examCorrect += sCorrect;
+                    examTotal += sTotal;
+                    
+                    sectionsHtml += `
+                        <div class="section-mini-item">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span>${s.name}</span>
+                                <span>${sPct}%</span>
+                            </div>
+                            <div class="mini-progress"><div class="mini-progress-fill" style="width:${sPct}%"></div></div>
+                        </div>
+                    `;
                 });
+                sectionsHtml += '</div>';
 
-                const percent = examTotal > 0 ? Math.round((examCorrect / examTotal) * 100) : 0;
-                labels.push(exam.title);
-                dataValues.push(percent);
+                globalTotalQuestions += examTotal;
+                const examPct = examTotal > 0 ? Math.round((examCorrect / examTotal) * 100) : 0;
+                const mastery = getMastery(examPct);
 
-                if (examTotal > 0) {
-                    if (percent > bestSubject.val) bestSubject = { name: exam.title, val: percent };
-                    if (percent < worstSubject.val) worstSubject = { name: exam.title, val: percent };
-                }
+                radarLabels.push(exam.title);
+                radarValues.push(examPct);
 
-                // 과목별 상태 결정
-                let statusClass = 'status-none';
-                let statusText = '학습 전';
-                if (examTotal > 0) {
-                    if (percent >= 70) {
-                        statusClass = 'status-good';
-                        statusText = '합격 안정권';
-                    } else {
-                        statusClass = 'status-warn';
-                        statusText = '보완 필요';
-                    }
-                }
-
-                // 세부 항목 추가
-                const item = document.createElement('div');
-                item.className = 'detail-item';
-                item.innerHTML = `
-                    <span class="detail-label">${exam.title}</span>
-                    <span class="detail-val">${percent}%</span>
-                    <div><span class="status-badge ${statusClass}">${statusText}</span></div>
-                    <small style="margin-top:0.5rem; color:#666;">${examCorrect} / ${examTotal} 문항</small>
+                subjectCard.innerHTML = `
+                    <div class="subject-header">
+                        <div>
+                            <span class="subject-name">${exam.title}</span>
+                            <span class="mastery-badge" style="color:${mastery.color}; background:${mastery.bg}">${mastery.label}</span>
+                        </div>
+                        <span class="subject-pct">${examPct}%</span>
+                    </div>
+                    <div class="mini-progress" style="height:8px; margin-bottom:1rem;"><div class="mini-progress-fill" style="width:${examPct}%; background:var(--stats-primary)"></div></div>
+                    ${sectionsHtml}
                 `;
-                detailGrid.appendChild(item);
+                subjectList.appendChild(subjectCard);
             }
 
-            // 요약 텍스트 업데이트
-            if (bestSubject.val !== -1) {
-                let summary = `현재 <strong>${bestSubject.name}</strong> 과목에서 가장 높은 성취도(${bestSubject.val}%)를 보이고 있습니다. `;
-                if (worstSubject.val < 70) {
-                    summary += `상대적으로 정답률이 낮은 <strong>${worstSubject.name}</strong> 과목을 집중적으로 복습해보세요.`;
-                } else {
-                    summary += `모든 과목이 고르게 우수한 성적을 유지하고 있습니다!`;
-                }
-                document.getElementById('summary-text').innerHTML = summary;
-            }
-
-            initChart(labels, dataValues);
+            document.getElementById('kpi-remains').innerText = (globalTotalQuestions - totalSolvedCount).toLocaleString();
+            initRadarChart(radarLabels, radarValues);
         }
 
-        function initChart(labels, values) {
-            const ctx = document.getElementById('statsChart').getContext('2d');
+        function initRadarChart(labels, values) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
             const isDark = document.body.getAttribute('data-theme') === 'dark';
-            const textColor = isDark ? '#94a3b8' : '#64748b';
-
+            
             new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: '정답률 (%)',
+                        label: '완성도',
                         data: values,
                         backgroundColor: 'rgba(79, 70, 229, 0.2)',
                         borderColor: '#4f46e5',
-                        pointBackgroundColor: '#4f46e5',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#4f46e5',
-                        borderWidth: 2
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4f46e5'
                     }]
                 },
                 options: {
                     scales: {
                         r: {
-                            angleLines: { color: isDark ? '#334155' : '#e2e8f0' },
-                            grid: { color: isDark ? '#334155' : '#e2e8f0' },
                             suggestMin: 0,
                             suggestMax: 100,
-                            ticks: { 
-                                stepSize: 20, 
-                                display: false // 수치 라벨 숨김 (깔끔하게)
-                            },
-                            pointLabels: { 
-                                color: textColor,
-                                font: { size: 12, weight: 'bold' } 
-                            }
+                            ticks: { display: false, stepSize: 20 },
+                            grid: { color: isDark ? '#334155' : '#e2e8f0' },
+                            angleLines: { color: isDark ? '#334155' : '#e2e8f0' },
+                            pointLabels: { color: isDark ? '#94a3b8' : '#64748b', font: { size: 11, weight: 'bold' } }
                         }
                     },
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ` 정답률: ${context.raw}%`;
-                                }
-                            }
-                        }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
         }
 
-        // 다크모드 대응
-        function checkTheme() {
-            if (document.body.getAttribute('data-theme') === 'dark') {
-                // 필요시 차트 재렌더링 로직 추가 가능
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', renderStats);
+        window.addEventListener('DOMContentLoaded', renderDashboard);
     </script>
 </body>
 </html>
