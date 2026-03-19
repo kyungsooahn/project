@@ -1,16 +1,16 @@
-const CACHE_NAME = 'pass-v2';
+const CACHE_NAME = 'pass-v3';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/quiz.html',
-  '/mock.html',
-  '/review.html',
-  '/solved.html',
-  '/style.css',
-  '/data/cim.js',
-  '/data/fia.js',
-  '/data/crea1.js',
-  '/data/crea2.js'
+  './',
+  './index.html',
+  './quiz.html',
+  './mock.html',
+  './review.html',
+  './solved.html',
+  './style.css',
+  './data/cim.js',
+  './data/fia.js',
+  './data/crea1.js',
+  './data/crea2.js'
 ];
 
 // 설치 시 캐시 저장 및 즉시 활성화 준비
