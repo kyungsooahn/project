@@ -95,7 +95,8 @@
                 <h1>🎓 합격 패스</h1>
                 <p id="total-stats" style="font-size: 0.8rem; opacity: 0.8; margin-top: 0.25rem;"></p>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button id="install-button" class="theme-toggle" style="display: none; background: var(--primary); color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 0.8rem; cursor: pointer; font-weight: 600;">📲 앱 설치</button>
                 <button onclick="location.href='solved.html'" class="theme-toggle" title="맞춘 문제">✅</button>
                 <button onclick="location.href='review.html'" class="theme-toggle" title="오답 노트">📝</button>
                 <button onclick="toggleTheme()" class="theme-toggle">🌙</button>
@@ -144,6 +145,39 @@
                     .catch(err => console.log('SW reg error:', err));
             });
         }
+
+        // PWA Install Prompt Logic
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-button');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // 브라우저의 기본 설치 팝업을 막음
+            e.preventDefault();
+            // 이벤트를 저장해 두었다가 나중에 사용
+            deferredPrompt = e;
+            // 설치 버튼을 화면에 표시
+            installBtn.style.display = 'block';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // 저장해둔 설치 팝업 표시
+                deferredPrompt.prompt();
+                // 사용자의 선택 결과 대기
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                // 이벤트 초기화 및 버튼 숨김
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            }
+        });
+
+        // 이미 설치된 경우 버튼 숨기기
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            installBtn.style.display = 'none';
+            console.log('PWA was installed');
+        });
 
         const WRONG_KEY = 'wrong_questions';
         const PROGRESS_KEY = 'progress_data';
