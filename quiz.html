@@ -16,7 +16,28 @@
     <meta name="google-adsense-account" content="ca-pub-1480804086381400">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1480804086381400"
      crossorigin="anonymous"></script>
+    
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    
     <link rel="stylesheet" href="style.css">
+    <style>
+        .timer-badge {
+            font-size: 0.8rem;
+            background: rgba(0,0,0,0.05);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-family: monospace;
+        }
+        [data-theme="dark"] .timer-badge {
+            background: rgba(255,255,255,0.1);
+        }
+        .shortcut-hint {
+            font-size: 0.7rem;
+            opacity: 0.5;
+            margin-right: 0.5rem;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -25,7 +46,10 @@
                 <h1 id="exam-title" style="font-size: 1.2rem; margin: 0;">시험 로딩중...</h1>
                 <small id="section-title" style="color: var(--secondary);"></small>
             </div>
-            <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span id="timer-display" class="timer-badge">00:00</span>
+                <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
+            </div>
         </header>
 
         <div id="quiz-container">
@@ -47,17 +71,29 @@
             </div>
 
             <div class="nav-btns">
-                <button class="primary" id="next-btn" onclick="nextQuestion()" style="display: none;">다음 문제</button>
+                <button class="primary" id="next-btn" onclick="nextQuestion()" style="display: none;">다음 문제 (Enter)</button>
             </div>
         </div>
 
-        <div id="result-container" style="display: none; text-align: center; padding: 2rem 1rem;">
-            <div style="font-size: 3.5rem; margin-bottom: 1rem;">🏁</div>
-            <h2 style="font-size: 1.5rem;">학습 완료!</h2>
-            <p id="final-score" style="font-size: 1.1rem; margin-bottom: 2.5rem; line-height: 1.4;"></p>
-            <div style="display: flex; gap: 1rem; flex-direction: column;">
-                <button class="primary" onclick="location.reload()">다시 풀기</button>
+        <div id="result-container" style="display: none; text-align: center; padding: 3rem 1rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🏁</div>
+            <h2>학습 완료!</h2>
+            <div style="background: var(--card); padding: 2rem; border-radius: 1rem; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <p id="final-score" style="font-size: 1.4rem; font-weight: bold; color: var(--primary); margin-bottom: 1rem;"></p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center; font-size: 0.9rem; color: var(--secondary);">
+                    <div>
+                        <small>총 소요 시간</small>
+                        <div id="total-time-result" style="font-size: 1.2rem; font-weight: bold; color: var(--text);">00:00</div>
+                    </div>
+                    <div>
+                        <small>문항당 평균</small>
+                        <div id="avg-time-result" style="font-size: 1.2rem; font-weight: bold; color: var(--text);">0초</div>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
                 <button class="primary" onclick="location.href='index.html'" style="background: var(--secondary);">메인으로</button>
+                <button class="primary" onclick="location.reload()">다시 풀기</button>
             </div>
         </div>
 
@@ -89,6 +125,13 @@
         let answered = false;
         let examKey = '';
         let sectionId = '';
+        
+        // Timer & Shuffling
+        let startTime = 0;
+        let totalElapsed = 0;
+        let timerInterval;
+        let shuffledOptions = [];
+        let correctOptionIdx = -1;
 
         window.onload = () => {
             const params = new URLSearchParams(location.search);
@@ -119,7 +162,6 @@
                 rawQuestions = section.questions.map(q => ({...q, sectionId: section.id, sectionName: section.name}));
             }
 
-            // Filter out already answered questions (both solved and wrong)
             const solvedQuestions = JSON.parse(localStorage.getItem(SOLVED_KEY) || '[]');
             const wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
             
@@ -131,7 +173,7 @@
 
             if (questions.length === 0) {
                 if (rawQuestions.length > 0) {
-                    alert('해당 섹션의 모든 문제를 학습했습니다! 오답 노트를 확인하거나 초기화 후 다시 시도해주세요.');
+                    alert('해당 섹션의 모든 문제를 학습했습니다!');
                 } else {
                     alert('문제가 없습니다.');
                 }
@@ -140,8 +182,41 @@
             }
 
             shuffleArray(questions);
+            startTimer();
             showQuestion();
+            
+            // Add Keyboard Shortcuts
+            window.addEventListener('keydown', handleKeyPress);
         };
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                totalElapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('timer-display').textContent = formatTime(totalElapsed);
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function handleKeyPress(e) {
+            if (document.getElementById('result-container').style.display === 'block') return;
+            
+            if (!answered) {
+                if (e.key >= '1' && e.key <= '4') {
+                    checkAnswer(parseInt(e.key) - 1);
+                }
+            } else {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    nextQuestion();
+                }
+            }
+        }
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -196,10 +271,15 @@
             const container = document.getElementById('options-container');
             container.innerHTML = '';
 
-            q.options.forEach((opt, i) => {
+            const optionsWithIndices = q.options.map((opt, i) => ({ text: opt, originalIdx: i }));
+            shuffleArray(optionsWithIndices);
+            shuffledOptions = optionsWithIndices;
+            correctOptionIdx = optionsWithIndices.findIndex(opt => opt.originalIdx === q.answer);
+
+            optionsWithIndices.forEach((opt, i) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
-                btn.textContent = `${i + 1}. ${opt}`;
+                btn.innerHTML = `<span class="shortcut-hint">[${i+1}]</span> ${opt.text}`;
                 btn.onclick = () => checkAnswer(i);
                 container.appendChild(btn);
             });
@@ -234,7 +314,6 @@
                 localStorage.setItem(SOLVED_KEY, JSON.stringify(solvedQuestions));
             }
             
-            // Update counts for index.html progress bars
             let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
             const key = `${examKey}_${q.sectionId}`;
             if (!progress[key]) progress[key] = 0;
@@ -243,19 +322,19 @@
         }
 
         function checkAnswer(idx) {
-            if (answered) return;
+            if (answered || idx >= shuffledOptions.length) return;
             answered = true;
 
             const q = questions[currentIdx];
             const buttons = document.querySelectorAll('.option-btn');
             
-            if (idx === q.answer) {
+            if (idx === correctOptionIdx) {
                 buttons[idx].classList.add('correct');
                 score++;
                 saveSolvedQuestion(q);
             } else {
                 buttons[idx].classList.add('wrong');
-                buttons[q.answer].classList.add('correct');
+                buttons[correctOptionIdx].classList.add('correct');
                 saveWrongQuestion(q);
             }
 
@@ -276,10 +355,22 @@
         }
 
         function showResult() {
+            clearInterval(timerInterval);
             document.getElementById('quiz-container').style.display = 'none';
             document.getElementById('result-container').style.display = 'block';
             document.getElementById('final-score').textContent = 
                 `총 ${questions.length}문제 중 ${score}문제를 맞혔습니다!`;
+            
+            document.getElementById('total-time-result').textContent = formatTime(totalElapsed);
+            const avg = Math.round(totalElapsed / questions.length);
+            document.getElementById('avg-time-result').textContent = `${avg}초`;
+            
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#4f46e5', '#818cf8', '#22c55e', '#ef4444']
+            });
         }
     </script>
 </body>
