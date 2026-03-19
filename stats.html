@@ -11,113 +11,92 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>학습 대시보드 📊</title>
+    <title>자격증별 상세 분석 📊</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         :root {
-            --card-bg: #ffffff;
             --stats-primary: #4f46e5;
             --stats-secondary: #10b981;
-            --stats-accent: #f59e0b;
-            --stats-danger: #ef4444;
-        }
-        [data-theme="dark"] {
-            --card-bg: #1e293b;
         }
 
-        .dashboard-grid {
+        .overall-summary {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
 
-        .kpi-card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        .summary-card {
+            background: var(--card-bg, #fff);
+            padding: 1rem;
+            border-radius: 0.75rem;
             text-align: center;
-            border-bottom: 4px solid var(--stats-primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .kpi-card:nth-child(2) { border-color: var(--stats-secondary); }
-        .kpi-card:nth-child(3) { border-color: var(--stats-accent); }
-        .kpi-card:nth-child(4) { border-color: var(--stats-danger); }
+        [data-theme="dark"] .summary-card { background: #1e293b; }
 
-        .kpi-val { display: block; font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-bottom: 0.25rem; }
-        .kpi-label { font-size: 0.85rem; color: var(--secondary); font-weight: 600; }
-
-        .main-stats-row {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+        .cert-section {
+            background: var(--card-bg, #fff);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        @media (max-width: 768px) {
-            .main-stats-row { grid-template-columns: 1fr; }
-        }
+        [data-theme="dark"] .cert-section { background: #1e293b; }
 
-        .chart-container {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .subject-breakdown {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .subject-card {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #eee;
-        }
-        .subject-card:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-
-        .subject-header {
+        .cert-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #eee;
         }
-        .subject-name { font-weight: bold; font-size: 1.1rem; }
-        .subject-pct { font-weight: 800; color: var(--stats-primary); }
+        [data-theme="dark"] .cert-header { border-color: #334155; }
 
-        .section-mini-grid {
+        .cert-title-group h2 { margin: 0; font-size: 1.5rem; color: var(--primary); }
+        .cert-overall-pct { font-size: 2rem; font-weight: 900; color: var(--stats-primary); }
+
+        .cert-content {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 0.5rem;
-            margin-top: 0.5rem;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            align-items: center;
         }
-        .section-mini-item {
-            font-size: 0.75rem;
-            padding: 0.5rem;
+        @media (max-width: 850px) {
+            .cert-content { grid-template-columns: 1fr; }
+            .chart-wrapper { max-width: 400px; margin: 0 auto; }
+        }
+
+        .chart-wrapper { position: relative; width: 100%; }
+
+        .section-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .section-item {
+            padding: 0.75rem 1rem;
             background: rgba(0,0,0,0.02);
-            border-radius: 0.4rem;
+            border-radius: 0.75rem;
         }
-        .mini-progress {
-            height: 4px;
+        [data-theme="dark"] .section-item { background: rgba(255,255,255,0.03); }
+
+        .progress-container {
+            height: 6px;
             background: #eee;
-            border-radius: 2px;
-            margin-top: 4px;
+            border-radius: 3px;
+            margin-top: 0.5rem;
             overflow: hidden;
         }
-        .mini-progress-fill { height: 100%; background: var(--stats-secondary); transition: width 0.3s; }
+        [data-theme="dark"] .progress-container { background: #334155; }
+        .progress-fill { height: 100%; background: var(--stats-secondary); transition: width 0.5s ease-out; }
 
         .mastery-badge {
-            display: inline-block;
             padding: 2px 8px;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: bold;
-            margin-left: 0.5rem;
-            vertical-align: middle;
+            margin-top: 0.5rem;
+            display: inline-block;
         }
     </style>
 </head>
@@ -126,43 +105,26 @@
         <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
-                <h1 style="margin: 0;">📊 학습 대시보드</h1>
+                <h1 style="margin: 0;">📊 자격증별 학습 리포트</h1>
             </div>
         </header>
 
-        <!-- 상단 요약 카드 -->
-        <div class="dashboard-grid">
-            <div class="kpi-card">
-                <span class="kpi-val" id="kpi-total">0</span>
-                <span class="kpi-label">푼 문제 수</span>
+        <div class="overall-summary">
+            <div class="summary-card">
+                <small style="color:var(--secondary)">총 학습 문항</small>
+                <div style="font-size:1.2rem; font-weight:bold;" id="total-attempted">0</div>
             </div>
-            <div class="kpi-card">
-                <span class="kpi-val" id="kpi-accuracy">0%</span>
-                <span class="kpi-label">전체 정답률</span>
+            <div class="summary-card">
+                <small style="color:var(--secondary)">평균 정답률</small>
+                <div style="font-size:1.2rem; font-weight:bold;" id="avg-accuracy">0%</div>
             </div>
-            <div class="kpi-card">
-                <span class="kpi-val" id="kpi-bookmarks">0</span>
-                <span class="kpi-label">즐겨찾기</span>
-            </div>
-            <div class="kpi-card">
-                <span class="kpi-val" id="kpi-remains">0</span>
-                <span class="kpi-label">남은 문제</span>
+            <div class="summary-card">
+                <small style="color:var(--secondary)">즐겨찾기</small>
+                <div style="font-size:1.2rem; font-weight:bold;" id="total-bookmarks">0</div>
             </div>
         </div>
 
-        <div class="main-stats-row">
-            <!-- 레이더 차트 -->
-            <div class="chart-container">
-                <h3 style="margin-top:0; font-size:1rem; color:var(--primary);">과목별 밸런스</h3>
-                <canvas id="radarChart"></canvas>
-            </div>
-            
-            <!-- 과목별 상세 분석 -->
-            <div class="subject-breakdown">
-                <h3 style="margin-top:0; font-size:1rem; color:var(--primary);">자격증별 마스터리</h3>
-                <div id="subject-list"></div>
-            </div>
-        </div>
+        <div id="cert-dashboard"></div>
 
         <footer>
             <div class="footer-links">
@@ -182,94 +144,99 @@
     <script src="data/crea1.js"></script>
     <script src="data/crea2.js"></script>
     <script>
-        const WRONG_KEY = 'wrong_questions';
         const PROGRESS_KEY = 'progress_data';
         const BOOKMARK_KEY = 'bookmarked_questions';
         const SOLVED_KEY = 'solved_questions';
+        const WRONG_KEY = 'wrong_questions';
 
         function getMastery(pct) {
-            if (pct >= 90) return { label: '마스터', color: '#7c3aed', bg: '#f5f3ff' };
-            if (pct >= 70) return { label: '합격권', color: '#059669', bg: '#ecfdf5' };
-            if (pct >= 40) return { label: '숙련', color: '#d97706', bg: '#fffbeb' };
-            if (pct > 0) return { label: '입문', color: '#4b5563', bg: '#f9fafb' };
-            return { label: '시작전', color: '#9ca3af', bg: '#f3f4f6' };
+            if (pct >= 90) return { label: 'Master', color: '#7c3aed', bg: '#f5f3ff' };
+            if (pct >= 70) return { label: 'Safe', color: '#059669', bg: '#ecfdf5' };
+            if (pct >= 40) return { label: 'Skilled', color: '#d97706', bg: '#fffbeb' };
+            return { label: 'Learning', color: '#4b5563', bg: '#f9fafb' };
         }
 
-        function renderDashboard() {
-            const wrongs = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
-            const solved = JSON.parse(localStorage.getItem(SOLVED_KEY) || '[]');
-            const bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]');
+        function renderCertificates() {
             const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
-
-            const totalSolvedCount = solved.length;
-            const totalWrongCount = wrongs.length;
-            const totalAttempted = totalSolvedCount + totalWrongCount;
-            const accuracy = totalAttempted > 0 ? Math.round((totalSolvedCount / totalAttempted) * 100) : 0;
-
-            document.getElementById('kpi-total').innerText = totalAttempted.toLocaleString();
-            document.getElementById('kpi-accuracy').innerText = `${accuracy}%`;
-            document.getElementById('kpi-bookmarks').innerText = bookmarks.length;
-
-            const subjectList = document.getElementById('subject-list');
-            const radarLabels = [];
-            const radarValues = [];
-            let globalTotalQuestions = 0;
+            const bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]');
+            const solved = JSON.parse(localStorage.getItem(SOLVED_KEY) || '[]');
+            const wrongs = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
+            
+            const dashboard = document.getElementById('cert-dashboard');
+            let globalCorrect = 0;
+            let globalTotal = 0;
 
             for (let key in window.examData) {
                 const exam = window.examData[key];
                 let examCorrect = 0;
                 let examTotal = 0;
+                
+                const sectionLabels = [];
+                const sectionValues = [];
+                let sectionsHtml = '';
 
-                const subjectCard = document.createElement('div');
-                subjectCard.className = 'subject-card';
-
-                let sectionsHtml = '<div class="section-mini-grid">';
                 exam.sections.forEach(s => {
                     const sCorrect = progress[`${key}_${s.id}`] || 0;
                     const sTotal = s.questions ? s.questions.length : 0;
                     const sPct = sTotal > 0 ? Math.round((sCorrect / sTotal) * 100) : 0;
+                    
                     examCorrect += sCorrect;
                     examTotal += sTotal;
                     
+                    sectionLabels.push(s.name);
+                    sectionValues.push(sPct);
+
                     sectionsHtml += `
-                        <div class="section-mini-item">
-                            <div style="display:flex; justify-content:space-between;">
-                                <span>${s.name}</span>
-                                <span>${sPct}%</span>
+                        <div class="section-item">
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                                <strong>${s.name}</strong>
+                                <span>${sPct}% (${sCorrect}/${sTotal})</span>
                             </div>
-                            <div class="mini-progress"><div class="mini-progress-fill" style="width:${sPct}%"></div></div>
+                            <div class="progress-container">
+                                <div class="progress-fill" style="width:${sPct}%"></div>
+                            </div>
                         </div>
                     `;
                 });
-                sectionsHtml += '</div>';
 
-                globalTotalQuestions += examTotal;
                 const examPct = examTotal > 0 ? Math.round((examCorrect / examTotal) * 100) : 0;
+                globalCorrect += examCorrect;
+                globalTotal += examTotal;
                 const mastery = getMastery(examPct);
 
-                radarLabels.push(exam.title);
-                radarValues.push(examPct);
-
-                subjectCard.innerHTML = `
-                    <div class="subject-header">
-                        <div>
-                            <span class="subject-name">${exam.title}</span>
-                            <span class="mastery-badge" style="color:${mastery.color}; background:${mastery.bg}">${mastery.label}</span>
+                const certDiv = document.createElement('div');
+                certDiv.className = 'cert-section';
+                certDiv.innerHTML = `
+                    <div class="cert-header">
+                        <div class="cert-title-group">
+                            <h2>${exam.title}</h2>
+                            <span class="mastery-badge" style="color:${mastery.color}; background:${mastery.bg}">등급: ${mastery.label}</span>
                         </div>
-                        <span class="subject-pct">${examPct}%</span>
+                        <div class="cert-overall-pct">${examPct}%</div>
                     </div>
-                    <div class="mini-progress" style="height:8px; margin-bottom:1rem;"><div class="mini-progress-fill" style="width:${examPct}%; background:var(--stats-primary)"></div></div>
-                    ${sectionsHtml}
+                    <div class="cert-content">
+                        <div class="chart-wrapper">
+                            <canvas id="chart-${key}"></canvas>
+                        </div>
+                        <div class="section-list">
+                            <h4 style="margin:0 0 1rem 0; font-size:0.9rem; color:var(--secondary);">과목별 성취도 상세</h4>
+                            ${sectionsHtml}
+                        </div>
+                    </div>
                 `;
-                subjectList.appendChild(subjectCard);
+                dashboard.appendChild(certDiv);
+
+                initCertChart(key, sectionLabels, sectionValues);
             }
 
-            document.getElementById('kpi-remains').innerText = (globalTotalQuestions - totalSolvedCount).toLocaleString();
-            initRadarChart(radarLabels, radarValues);
+            // 요약 수치 업데이트
+            document.getElementById('total-attempted').innerText = (solved.length + wrongs.length).toLocaleString();
+            document.getElementById('avg-accuracy').innerText = globalTotal > 0 ? Math.round((globalCorrect / globalTotal) * 100) + '%' : '0%';
+            document.getElementById('total-bookmarks').innerText = bookmarks.length;
         }
 
-        function initRadarChart(labels, values) {
-            const ctx = document.getElementById('radarChart').getContext('2d');
+        function initCertChart(key, labels, values) {
+            const ctx = document.getElementById(`chart-${key}`).getContext('2d');
             const isDark = document.body.getAttribute('data-theme') === 'dark';
             
             new Chart(ctx, {
@@ -277,12 +244,13 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: '완성도',
+                        label: '정답률',
                         data: values,
                         backgroundColor: 'rgba(79, 70, 229, 0.2)',
                         borderColor: '#4f46e5',
                         borderWidth: 2,
-                        pointBackgroundColor: '#4f46e5'
+                        pointBackgroundColor: '#4f46e5',
+                        pointRadius: 3
                     }]
                 },
                 options: {
@@ -293,15 +261,29 @@
                             ticks: { display: false, stepSize: 20 },
                             grid: { color: isDark ? '#334155' : '#e2e8f0' },
                             angleLines: { color: isDark ? '#334155' : '#e2e8f0' },
-                            pointLabels: { color: isDark ? '#94a3b8' : '#64748b', font: { size: 11, weight: 'bold' } }
+                            pointLabels: { 
+                                color: isDark ? '#94a3b8' : '#64748b',
+                                font: { size: 10, weight: 'bold' },
+                                callback: function(value) {
+                                    if (value.length > 8) return value.substr(0, 8) + '...';
+                                    return value;
+                                }
+                            }
                         }
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ` 성취도: ${ctx.raw}%`
+                            }
+                        }
+                    }
                 }
             });
         }
 
-        window.addEventListener('DOMContentLoaded', renderDashboard);
+        window.addEventListener('DOMContentLoaded', renderCertificates);
     </script>
 </body>
 </html>
