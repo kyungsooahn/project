@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-G99S2G82RN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-G99S2G82RN');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>즐겨찾는 문제 ⭐</title>
+    <meta name="google-adsense-account" content="ca-pub-1480804086381400">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1480804086381400"
+     crossorigin="anonymous"></script>
+    
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .section-group {
+            margin-bottom: 3rem;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+        .wrong-item {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary);
+        }
+        .wrong-q {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0;
+            margin-top: 1rem;
+            text-decoration: underline;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--secondary);
+        }
+        .download-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* PDF Template Styles */
+        #pdf-template {
+            position: absolute;
+            left: -10000px;
+            top: 0;
+            width: 210mm;
+            padding: 15mm;
+            background: white;
+            color: #1a1a1a;
+        }
+        .pdf-page-title { font-size: 22pt; font-weight: 800; color: #4f46e5; text-align: center; border-bottom: 2pt solid #4f46e5; padding-bottom: 8pt; margin-bottom: 20pt; }
+        .pdf-columns { column-count: 2; column-gap: 10mm; }
+        .pdf-question-card { margin-bottom: 12pt; padding: 10pt; border: 0.5pt solid #ddd; border-radius: 6pt; break-inside: avoid; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
+                <h1 style="margin: 0;">⭐ 즐겨찾기</h1>
+            </div>
+            <button id="pdf-download-btn" class="download-btn" onclick="downloadPDF()">📄 PDF 다운로드</button>
+        </header>
+
+        <div id="bookmark-list-container"></div>
+
+        <footer>
+            <div class="footer-links">
+                <a href="about.html">서비스 소개</a>
+                <a href="privacy.html">개인정보처리방침</a>
+                <a href="solved.html">맞춘 문제</a>
+                <a href="review.html">오답 노트</a>
+                <a href="contact.html">문의하기</a>
+            </div>
+            <p>&copy; 2026 합격 패스. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <div id="pdf-template"></div>
+
+    <script>
+        const BOOKMARK_KEY = 'bookmarked_questions';
+
+        function getGroupedBookmarks() {
+            const bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]');
+            const groups = {};
+            bookmarks.forEach((q, index) => {
+                const title = q.examTitle || '기타';
+                if (!groups[title]) groups[title] = [];
+                groups[title].push({ ...q, originalIndex: index });
+            });
+            return groups;
+        }
+
+        function renderBookmarks() {
+            const container = document.getElementById('bookmark-list-container');
+            const groups = getGroupedBookmarks();
+            
+            if (Object.keys(groups).length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⭐</div>
+                        <p>즐겨찾기한 문제가 없습니다.<br>학습 중에 중요한 문제를 별표로 표시해보세요.</p>
+                    </div>
+                `;
+                document.getElementById('pdf-download-btn').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('pdf-download-btn').style.display = 'flex';
+
+            let html = '';
+            for (const title in groups) {
+                html += `
+                    <div class="section-group">
+                        <div class="section-header"><h2>📌 ${title}</h2></div>
+                `;
+                groups[title].forEach(q => {
+                    const optionsHtml = q.options.map((opt, i) => `
+                        <div style="margin: 0.25rem 0; padding: 0.5rem; border-radius: 0.25rem; background: ${i === q.answer ? 'rgba(79, 70, 229, 0.05)' : 'transparent'}; border: 1px solid ${i === q.answer ? 'var(--primary)' : '#eee'}">
+                            ${i + 1}. ${opt} ${i === q.answer ? '✅' : ''}
+                        </div>
+                    `).join('');
+
+                    html += `
+                        <div class="wrong-item">
+                            <span class="wrong-q">${q.q}</span>
+                            <div class="options">${optionsHtml}</div>
+                            <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.03); border-radius: 0.5rem; font-size: 0.9rem;">
+                                <strong>💡 해설:</strong> ${q.exp}
+                            </div>
+                            <button class="delete-btn" onclick="deleteBookmark(${q.originalIndex})">즐겨찾기 해제</button>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function deleteBookmark(idx) {
+            let bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]');
+            bookmarks.splice(idx, 1);
+            localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
+            renderBookmarks();
+        }
+
+        async function downloadPDF() {
+            const btn = document.getElementById('pdf-download-btn');
+            const template = document.getElementById('pdf-template');
+            const groups = getGroupedBookmarks();
+            
+            try {
+                btn.innerText = '⏳ 생성 중...';
+                let pdfHtml = `<div class="pdf-page-title">즐겨찾기 요약 노트</div><div class="pdf-columns">`;
+                for (const title in groups) {
+                    pdfHtml += `<div style="column-span:all; font-weight:bold; font-size:14pt; margin-top:10pt; border-bottom:1pt solid #4f46e5;">${title}</div>`;
+                    groups[title].forEach((q, idx) => {
+                        const opts = q.options.map((o, i) => `<div style="font-size:9pt; ${i === q.answer ? 'color:#4f46e5; font-weight:bold;' : ''}">${i+1}. ${o}</div>`).join('');
+                        pdfHtml += `
+                            <div class="pdf-question-card">
+                                <div style="font-size:10pt; font-weight:bold; margin-bottom:5pt;">Q${idx+1}. ${q.q}</div>
+                                ${opts}
+                                <div style="font-size:8pt; margin-top:5pt; color:#666; font-style:italic;">해설: ${q.exp}</div>
+                            </div>
+                        `;
+                    });
+                }
+                pdfHtml += `</div>`;
+                template.innerHTML = pdfHtml;
+
+                const canvas = await html2canvas(template, { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 794 });
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+                pdf.save(`합격패스_즐겨찾기_${new Date().toISOString().slice(0, 10)}.pdf`);
+            } catch (e) { alert('PDF 생성 실패'); }
+            finally { btn.innerText = '📄 PDF 다운로드'; template.innerHTML = ''; }
+        }
+
+        renderBookmarks();
+    </script>
+</body>
+</html>

@@ -31,7 +31,10 @@
         <div id="quiz-container">
             <div class="quiz-header">
                 <span id="q-number">문제 로딩중...</span>
-                <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button id="bookmark-btn" onclick="toggleBookmark()" class="theme-toggle" title="즐겨찾기" style="background: none; border: 1px solid #ddd; font-size: 1.2rem; padding: 2px 8px;">☆</button>
+                    <div class="progress-bar" style="width: 100px;"><div class="progress-fill" id="progress"></div></div>
+                </div>
             </div>
 
             <h2 id="question-text" style="margin-bottom: 2rem; line-height: 1.4; font-size: 1.1rem;">질문 내용</h2>
@@ -48,12 +51,13 @@
             </div>
         </div>
 
-        <div id="result-container" style="display: none; text-align: center;">
-            <h2>🎉 섹션 학습 완료!</h2>
-            <p id="final-score" style="font-size: 1.5rem; margin: 2rem 0;"></p>
-            <div style="display: flex; gap: 1rem;">
-                <button class="primary" onclick="location.reload()">다시 풀기</button>
+        <div id="result-container" style="display: none; text-align: center; padding: 3rem 1rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🏁</div>
+            <h2>학습 완료!</h2>
+            <p id="final-score" style="font-size: 1.2rem; margin-bottom: 2rem;"></p>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
                 <button class="primary" onclick="location.href='index.html'" style="background: var(--secondary);">메인으로</button>
+                <button class="primary" onclick="location.reload()">다시 풀기</button>
             </div>
         </div>
 
@@ -69,45 +73,35 @@
         </footer>
     </div>
 
+    <script src="data/cim.js"></script>
+    <script src="data/fia.js"></script>
+    <script src="data/crea1.js"></script>
+    <script src="data/crea2.js"></script>
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const examKey = urlParams.get('exam');
-        const sectionId = urlParams.get('section');
-
         const WRONG_KEY = 'wrong_questions';
         const SOLVED_KEY = 'solved_questions';
         const PROGRESS_KEY = 'progress_data';
+        const BOOKMARK_KEY = 'bookmarked_questions';
 
         let questions = [];
         let currentIdx = 0;
         let score = 0;
         let answered = false;
+        let examKey = '';
+        let sectionId = '';
 
-        // Dynamically load the correct data file
-        if (examKey) {
-            const dataScript = document.createElement('script');
-            dataScript.src = `data/${examKey}.js`;
-            dataScript.onload = () => {
-                init();
-            };
-            dataScript.onerror = () => {
-                alert('데이터를 불러오는데 실패했습니다.');
-                location.href = 'index.html';
-            };
-            document.head.appendChild(dataScript);
-        } else {
-            alert('잘못된 접근입니다.');
-            location.href = 'index.html';
-        }
+        window.onload = () => {
+            const params = new URLSearchParams(location.search);
+            examKey = params.get('exam');
+            sectionId = params.get('section');
 
-        function init() {
-            const examData = window.examData[examKey];
-            if (!examData) {
-                alert('시험 데이터를 찾을 수 없습니다.');
+            if (!examKey || !window.examData[examKey]) {
+                alert('잘못된 접근입니다.');
                 location.href = 'index.html';
                 return;
             }
 
+            const examData = window.examData[examKey];
             document.getElementById('exam-title').textContent = examData.title;
 
             let rawQuestions = [];
@@ -136,9 +130,7 @@
             });
 
             if (questions.length === 0) {
-                const totalCount = rawQuestions.length;
-                const answeredCount = totalCount - questions.length;
-                if (totalCount > 0) {
+                if (rawQuestions.length > 0) {
                     alert('해당 섹션의 모든 문제를 학습했습니다! 오답 노트를 확인하거나 초기화 후 다시 시도해주세요.');
                 } else {
                     alert('문제가 없습니다.');
@@ -149,13 +141,43 @@
 
             shuffleArray(questions);
             showQuestion();
-        }
+        };
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
             }
+        }
+
+        function updateBookmarkUI() {
+            const bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]');
+            const currentQ = questions[currentIdx];
+            const isBookmarked = bookmarks.some(b => b.q === currentQ.q && b.examKey === examKey);
+            const btn = document.getElementById('bookmark-btn');
+            if (btn) {
+                btn.innerText = isBookmarked ? '⭐' : '☆';
+                btn.style.borderColor = isBookmarked ? 'var(--primary)' : '#ddd';
+            }
+        }
+
+        function toggleBookmark() {
+            const bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]');
+            const currentQ = questions[currentIdx];
+            const foundIdx = bookmarks.findIndex(b => b.q === currentQ.q && b.examKey === examKey);
+
+            if (foundIdx > -1) {
+                bookmarks.splice(foundIdx, 1);
+            } else {
+                bookmarks.push({
+                    ...currentQ,
+                    examKey: examKey,
+                    examTitle: window.examData[examKey].title,
+                    savedAt: new Date().getTime()
+                });
+            }
+            localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
+            updateBookmarkUI();
         }
 
         function showQuestion() {
@@ -168,6 +190,8 @@
             
             const progress = ((currentIdx) / questions.length) * 100;
             document.getElementById('progress').style.width = `${progress}%`;
+
+            updateBookmarkUI();
 
             const container = document.getElementById('options-container');
             container.innerHTML = '';
