@@ -43,7 +43,7 @@
                 <h1>🎓 합격 패스</h1>
                 <p id="total-stats" style="font-size: 0.8rem; opacity: 0.8; margin-top: 0.25rem;"></p>
             </div>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end;">
                 <button onclick="location.href='stats.html'" class="theme-toggle" title="통계 분석">📊</button>
                 <button onclick="location.href='bookmarks.html'" class="theme-toggle" title="즐겨찾기">⭐</button>
                 <button onclick="location.href='solved.html'" class="theme-toggle" title="맞춘 문제">✅</button>
@@ -128,10 +128,10 @@
                     const accuracy = attempted > 0 ? Math.round((sectionCorrectCount / attempted) * 100) : 0;
 
                     return `
-                        <a href="quiz.html?exam=${key}&section=${s.id}" class="section-item" style="flex-direction: column; align-items: flex-start;">
-                            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-                                <span>${s.name}</span>
-                                <div class="stats-badge">
+                        <a href="quiz.html?exam=${key}&section=${s.id}" class="section-item" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                                <span style="font-weight: 500;">${s.name}</span>
+                                <div class="stats-badge" style="flex-wrap: wrap; justify-content: flex-end;">
                                     ${sectionWrongCount > 0 ? `<span class="badge badge-wrong">오답 ${sectionWrongCount}</span>` : ''}
                                     ${attempted > 0 ? `<span class="badge" style="background:var(--primary); opacity:0.9;">정답 ${accuracy}%</span>` : ''}
                                     <span class="badge badge-progress">${percent}%</span>

@@ -23,58 +23,65 @@
 
         .overall-summary {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 2rem;
         }
 
         .summary-card {
-            background: var(--card-bg, #fff);
-            padding: 1rem;
+            background: var(--card);
+            padding: 1.25rem 0.75rem;
             border-radius: 0.75rem;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        [data-theme="dark"] .summary-card { background: #1e293b; }
 
         .cert-section {
-            background: var(--card-bg, #fff);
-            padding: 2rem;
-            border-radius: 1.5rem;
-            margin-bottom: 3rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
-        [data-theme="dark"] .cert-section { background: #1e293b; }
+
+        @media (max-width: 600px) {
+            .cert-section {
+                padding: 1.25rem;
+                border-radius: 1rem;
+            }
+        }
 
         .cert-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 2rem;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
             padding-bottom: 1rem;
-            border-bottom: 2px solid #eee;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            gap: 1rem;
         }
-        [data-theme="dark"] .cert-header { border-color: #334155; }
 
-        .cert-title-group h2 { margin: 0; font-size: 1.5rem; color: var(--primary); }
-        .cert-overall-pct { font-size: 2rem; font-weight: 900; color: var(--stats-primary); }
+        .cert-title-group h2 { margin: 0; font-size: 1.35rem; color: var(--primary); word-break: keep-all; }
+        .cert-overall-pct { font-size: 1.75rem; font-weight: 900; color: var(--stats-primary); }
 
         .cert-content {
             display: grid;
             grid-template-columns: 1fr 1.2fr;
-            gap: 2rem;
+            gap: 1.5rem;
             align-items: center;
         }
-        @media (max-width: 850px) {
+
+        @media (max-width: 768px) {
             .cert-content { grid-template-columns: 1fr; }
-            .chart-wrapper { max-width: 400px; margin: 0 auto; }
+            .chart-wrapper { max-width: 320px; margin: 0 auto; }
+            .cert-header { align-items: center; }
         }
 
         .chart-wrapper { position: relative; width: 100%; }
 
         .section-list { display: flex; flex-direction: column; gap: 0.75rem; }
         .section-item {
-            padding: 0.75rem 1rem;
+            padding: 0.85rem;
             background: rgba(0,0,0,0.02);
             border-radius: 0.75rem;
         }
@@ -93,7 +100,7 @@
         .mastery-badge {
             padding: 2px 8px;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: bold;
             margin-top: 0.5rem;
             display: inline-block;
@@ -102,24 +109,24 @@
 </head>
 <body>
     <div class="container">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
+        <header>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
-                <h1 style="margin: 0;">📊 자격증별 학습 리포트</h1>
+                <h1 style="margin: 0; font-size: 1.4rem;">📊 상세 학습 리포트</h1>
             </div>
         </header>
 
         <div class="overall-summary">
             <div class="summary-card">
-                <small style="color:var(--secondary)">총 학습 문항</small>
+                <small style="color:var(--secondary); display: block; margin-bottom: 0.25rem;">총 학습 문항</small>
                 <div style="font-size:1.2rem; font-weight:bold;" id="total-attempted">0</div>
             </div>
             <div class="summary-card">
-                <small style="color:var(--secondary)">평균 정답률</small>
+                <small style="color:var(--secondary); display: block; margin-bottom: 0.25rem;">평균 정답률</small>
                 <div style="font-size:1.2rem; font-weight:bold;" id="avg-accuracy">0%</div>
             </div>
             <div class="summary-card">
-                <small style="color:var(--secondary)">즐겨찾기</small>
+                <small style="color:var(--secondary); display: block; margin-bottom: 0.25rem;">즐겨찾기</small>
                 <div style="font-size:1.2rem; font-weight:bold;" id="total-bookmarks">0</div>
             </div>
         </div>
@@ -150,10 +157,10 @@
         const WRONG_KEY = 'wrong_questions';
 
         function getMastery(pct) {
-            if (pct >= 90) return { label: 'Master', color: '#7c3aed', bg: '#f5f3ff' };
-            if (pct >= 70) return { label: 'Safe', color: '#059669', bg: '#ecfdf5' };
-            if (pct >= 40) return { label: 'Skilled', color: '#d97706', bg: '#fffbeb' };
-            return { label: 'Learning', color: '#4b5563', bg: '#f9fafb' };
+            if (pct >= 90) return { label: 'Master', color: '#7c3aed', bg: 'rgba(124, 58, 237, 0.1)' };
+            if (pct >= 70) return { label: 'Safe', color: '#059669', bg: 'rgba(5, 150, 105, 0.1)' };
+            if (pct >= 40) return { label: 'Skilled', color: '#d97706', bg: 'rgba(217, 119, 6, 0.1)' };
+            return { label: 'Learning', color: '#4b5563', bg: 'rgba(75, 85, 99, 0.1)' };
         }
 
         function renderCertificates() {
@@ -163,6 +170,7 @@
             const wrongs = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
             
             const dashboard = document.getElementById('cert-dashboard');
+            dashboard.innerHTML = '';
             let globalCorrect = 0;
             let globalTotal = 0;
 
@@ -192,7 +200,7 @@
 
                     sectionsHtml += `
                         <div class="section-item">
-                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:2px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px; gap: 0.5rem; flex-wrap: wrap;">
                                 <strong>${s.name}</strong>
                                 <span style="color:var(--stats-primary); font-weight:bold;">정답률 ${sAccuracy}%</span>
                             </div>
@@ -227,7 +235,7 @@
                             <canvas id="chart-${key}"></canvas>
                         </div>
                         <div class="section-list">
-                            <h4 style="margin:0 0 1rem 0; font-size:0.9rem; color:var(--secondary);">과목별 성취도 상세</h4>
+                            <h4 style="margin:0 0 1rem 0; font-size:0.9rem; color:var(--secondary);">과목별 성취도</h4>
                             ${sectionsHtml}
                         </div>
                     </div>
@@ -252,7 +260,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: '정답률',
+                        label: '성취도',
                         data: values,
                         backgroundColor: 'rgba(79, 70, 229, 0.2)',
                         borderColor: '#4f46e5',
@@ -273,7 +281,7 @@
                                 color: isDark ? '#94a3b8' : '#64748b',
                                 font: { size: 10, weight: 'bold' },
                                 callback: function(value) {
-                                    if (value.length > 8) return value.substr(0, 8) + '...';
+                                    if (value.length > 6) return value.substr(0, 6) + '...';
                                     return value;
                                 }
                             }

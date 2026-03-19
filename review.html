@@ -24,19 +24,19 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .filter-container {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
         }
         .filter-btn {
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.85rem;
             border-radius: 2rem;
             border: 1px solid var(--primary);
             background: transparent;
             color: var(--primary);
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             transition: all 0.2s;
         }
         .filter-btn.active {
@@ -44,7 +44,7 @@
             color: white;
         }
         .section-group {
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
         }
         .section-header {
             display: flex;
@@ -53,27 +53,30 @@
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--primary);
+            flex-wrap: wrap;
         }
         .section-header h2 {
             margin: 0;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: var(--primary);
         }
         .wrong-item {
             background: var(--card);
-            padding: 1.5rem;
+            padding: 1.25rem;
             border-radius: 1rem;
             margin-bottom: 1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--danger);
+            border-left: 4px solid var(--danger);
         }
         .wrong-q {
             font-weight: bold;
             margin-bottom: 1rem;
             display: block;
+            line-height: 1.4;
+            font-size: 1rem;
         }
         .wrong-meta {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--secondary);
             margin-bottom: 0.5rem;
             display: block;
@@ -83,32 +86,31 @@
             border: none;
             color: var(--danger);
             cursor: pointer;
-            font-size: 0.8rem;
-            padding: 0;
-            margin-top: 1rem;
+            font-size: 0.75rem;
+            padding: 0.5rem 0;
+            margin-top: 0.75rem;
             text-decoration: underline;
         }
         .empty-state {
             text-align: center;
-            padding: 4rem 2rem;
+            padding: 4rem 1.5rem;
             color: var(--secondary);
         }
         .exam-title-badge {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             background: var(--secondary);
             color: white;
             padding: 2px 6px;
             border-radius: 4px;
-            margin-right: 0.5rem;
         }
 
         .download-btn {
             background: #4f46e5;
             color: white;
             border: none;
-            padding: 0.6rem 1.2rem;
+            padding: 0.5rem 1rem;
             border-radius: 0.5rem;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             font-weight: 600;
             display: flex;
@@ -117,6 +119,14 @@
             transition: transform 0.1s;
         }
         .download-btn:active { transform: scale(0.98); }
+
+        @media (max-width: 600px) {
+            header div:last-child {
+                width: 100%;
+                justify-content: flex-end !important;
+                margin-top: 0.5rem;
+            }
+        }
 
         /* PDF 전용 숨겨진 템플릿 스타일 (2단 레이아웃 최적화) */
         #pdf-template {
@@ -201,12 +211,14 @@
 </head>
 <body>
     <div class="container">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
+        <header>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
-                <h1 style="margin: 0;">📝 오답 노트</h1>
+                <h1 style="margin: 0; font-size: 1.4rem;">📝 오답 노트</h1>
             </div>
-            <button id="pdf-download-btn" class="download-btn" onclick="downloadPDF()">📄 PDF 다운로드</button>
+            <div style="display: flex; justify-content: flex-end;">
+                <button id="pdf-download-btn" class="download-btn" onclick="downloadPDF()">📄 PDF 다운로드</button>
+            </div>
         </header>
 
         <div id="filter-bar" class="filter-container"></div>
@@ -235,12 +247,12 @@
             const btn = document.getElementById('pdf-download-btn');
             const template = document.getElementById('pdf-template');
             const groups = getGroupedQuestions();
-            const originalText = btn.innerText;
+            const originalText = btn.innerHTML;
             
             if (Object.keys(groups).length === 0) return;
 
             try {
-                btn.innerText = '⏳ 고품질 2단 PDF 생성 중...';
+                btn.innerText = '⏳ 생성 중...';
                 btn.disabled = true;
 
                 // 1. PDF 전용 HTML 생성 (2단 레이아웃 적용)
@@ -314,13 +326,13 @@
                     heightLeft -= pdfHeight;
                 }
 
-                pdf.save(`합격패스_오답노트_2단_${new Date().toISOString().slice(0, 10)}.pdf`);
+                pdf.save(`합격패스_오답노트_${new Date().toISOString().slice(0, 10)}.pdf`);
                 
             } catch (error) {
                 console.error('PDF 생성 실패:', error);
                 alert('PDF 생성 중 오류가 발생했습니다.');
             } finally {
-                btn.innerText = originalText;
+                btn.innerHTML = originalText;
                 btn.disabled = false;
                 template.innerHTML = '';
             }
@@ -401,13 +413,13 @@
                         <div class="section-header">
                             <span class="exam-title-badge">${group.examTitle}</span>
                             <h2>${group.sectionName}</h2>
-                            <small style="margin-left: auto; color: var(--secondary);">${group.questions.length}문항</small>
+                            <small style="margin-left: auto; color: var(--secondary); font-size: 0.75rem;">${group.questions.length}문항</small>
                         </div>
                 `;
 
                 group.questions.reverse().forEach((q) => {
                     const optionsHtml = q.options.map((opt, i) => `
-                        <div style="margin: 0.25rem 0; padding: 0.5rem; border-radius: 0.25rem; background: ${i === q.answer ? 'rgba(34, 197, 94, 0.1)' : 'transparent'}; border: 1px solid ${i === q.answer ? 'var(--success)' : '#eee'}">
+                        <div style="margin: 0.25rem 0; padding: 0.6rem; border-radius: 0.4rem; font-size: 0.9rem; background: ${i === q.answer ? 'rgba(34, 197, 94, 0.1)' : 'transparent'}; border: 1px solid ${i === q.answer ? 'var(--success)' : 'rgba(0,0,0,0.05)'}">
                             ${i + 1}. ${opt} ${i === q.answer ? '✅' : ''}
                         </div>
                     `).join('');
@@ -419,7 +431,7 @@
                             <div class="options">
                                 ${optionsHtml}
                             </div>
-                            <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.03); border-radius: 0.5rem; font-size: 0.9rem;">
+                            <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.03); border-radius: 0.5rem; font-size: 0.85rem; line-height: 1.5; border-left: 2px solid var(--primary);">
                                 <strong>💡 해설:</strong> ${q.exp}
                             </div>
                             <button class="delete-btn" onclick="deleteWrong(${q.originalIndex})">오답 노트에서 삭제</button>
