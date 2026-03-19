@@ -20,9 +20,6 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1480804086381400"
      crossorigin="anonymous"></script>
     
-    <!-- Chart.js for Statistics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <link rel="stylesheet" href="style.css">
     <style>
         .category-group { margin-bottom: 3rem; }
@@ -37,19 +34,6 @@
         .badge-progress { background: var(--success); }
         .progress-mini { width: 100%; height: 4px; background: #eee; margin-top: 4px; border-radius: 2px; overflow: hidden; }
         .progress-mini-fill { height: 100%; background: var(--success); }
-
-        /* Stats Chart Container */
-        .stats-container {
-            background: var(--card);
-            padding: 1.5rem;
-            border-radius: 1rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #statsChart { max-width: 400px; width: 100%; }
     </style>
 </head>
 <body>
@@ -60,19 +44,13 @@
                 <p id="total-stats" style="font-size: 0.8rem; opacity: 0.8; margin-top: 0.25rem;"></p>
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button onclick="location.href='stats.html'" class="theme-toggle" title="통계 분석">📊</button>
                 <button onclick="location.href='bookmarks.html'" class="theme-toggle" title="즐겨찾기">⭐</button>
                 <button onclick="location.href='solved.html'" class="theme-toggle" title="맞춘 문제">✅</button>
                 <button onclick="location.href='review.html'" class="theme-toggle" title="오답 노트">📝</button>
                 <button onclick="toggleTheme()" class="theme-toggle">🌙</button>
             </div>
         </header>
-
-        <!-- 학습 통계 섹션 -->
-        <div class="stats-container">
-            <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.1rem; color: var(--primary);">📊 내 과목별 정답률 분석</h3>
-            <canvas id="statsChart"></canvas>
-            <p id="stats-summary" style="font-size: 0.85rem; color: var(--secondary); margin-top: 1rem; text-align: center;"></p>
-        </div>
 
         <section class="hero-section">
             <h2>자격증 합격을 위한 스마트한 동반자</h2>
@@ -96,6 +74,7 @@
                 <a href="solved.html">맞춘 문제</a>
                 <a href="review.html">오답 노트</a>
                 <a href="bookmarks.html">즐겨찾기</a>
+                <a href="stats.html">학습 통계</a>
                 <a href="contact.html">문의하기</a>
             </div>
             <p>&copy; 2026 합격 패스. All rights reserved.</p>
@@ -129,7 +108,6 @@
             const categories = { finance: ['cim', 'fia'], property: ['crea1', 'crea2'] };
 
             let globalTotalQ = 0;
-            const chartData = { labels: [], datasets: [{ label: '정답률 (%)', data: [], backgroundColor: 'rgba(79, 70, 229, 0.2)', borderColor: '#4f46e5', pointBackgroundColor: '#4f46e5' }] };
 
             for (let key in window.examData) {
                 const exam = window.examData[key];
@@ -137,15 +115,10 @@
                 const card = document.createElement('div');
                 card.className = 'exam-card';
 
-                let examTotalCorrect = 0;
-                let examTotalQuestions = 0;
-
                 let sectionsHtml = exam.sections.map(s => {
                     const sectionWrongCount = wrongs.filter(w => w.examKey === key && w.sectionId === s.id).length;
                     const sectionCorrectCount = progress[`${key}_${s.id}`] || 0;
                     const totalQ = s.questions ? s.questions.length : 0;
-                    examTotalCorrect += sectionCorrectCount;
-                    examTotalQuestions += totalQ;
                     globalTotalQ += totalQ;
                     const percent = totalQ > 0 ? Math.round((sectionCorrectCount / totalQ) * 100) : 0;
 
@@ -164,9 +137,6 @@
                     `;
                 }).join('');
 
-                chartData.labels.push(exam.title);
-                chartData.datasets[0].data.push(examTotalQuestions > 0 ? Math.round((examTotalCorrect / examTotalQuestions) * 100) : 0);
-
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                         <h3 style="margin: 0;">${exam.title}</h3>
@@ -177,22 +147,6 @@
                 grid.appendChild(card);
             }
             if (statsText) statsText.innerText = `현재 총 ${globalTotalQ.toLocaleString()}개의 문제가 준비되어 있습니다.`;
-            initChart(chartData);
-        }
-
-        function initChart(data) {
-            const ctx = document.getElementById('statsChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'radar',
-                data: data,
-                options: {
-                    scales: { r: { angleLines: { display: true }, suggestMin: 0, suggestMax: 100, ticks: { stepSize: 20 } } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-            
-            const avg = Math.round(data.datasets[0].data.reduce((a,b)=>a+b, 0) / data.datasets[0].data.length);
-            document.getElementById('stats-summary').innerText = `평균 학습 완성도는 ${avg}% 입니다. ${(avg > 70) ? '안정권 진입을 위해 조금만 더 힘내세요!' : '과목별 균형 있는 학습이 필요합니다.'}`;
         }
 
         function toggleTheme() {

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-G99S2G82RN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-G99S2G82RN');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학습 통계 분석 📊</title>
+    
+    <!-- Chart.js for Statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .stats-card {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #statsChart { max-width: 500px; width: 100%; margin: 2rem 0; }
+        .summary-box {
+            width: 100%;
+            padding: 1.5rem;
+            background: rgba(79, 70, 229, 0.05);
+            border-radius: 1rem;
+            border-left: 5px solid var(--primary);
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            width: 100%;
+            margin-top: 2rem;
+        }
+        .detail-item {
+            padding: 1rem;
+            background: rgba(0,0,0,0.02);
+            border-radius: 0.75rem;
+            text-align: center;
+        }
+        .detail-val {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .detail-label {
+            font-size: 0.8rem;
+            color: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
+                <h1 style="margin: 0;">📊 학습 통계</h1>
+            </div>
+        </header>
+
+        <div class="stats-card">
+            <h2 style="margin: 0; font-size: 1.2rem;">과목별 정답률 분석</h2>
+            <canvas id="statsChart"></canvas>
+            
+            <div id="stats-summary" class="summary-box">
+                <p style="margin: 0; font-weight: 600; color: var(--primary);">분석 결과</p>
+                <p id="summary-text" style="margin: 0.5rem 0 0 0; font-size: 0.95rem; line-height: 1.6;"></p>
+            </div>
+
+            <div class="detail-grid" id="detail-grid"></div>
+        </div>
+
+        <footer>
+            <div class="footer-links">
+                <a href="about.html">서비스 소개</a>
+                <a href="privacy.html">개인정보처리방침</a>
+                <a href="solved.html">맞춘 문제</a>
+                <a href="review.html">오답 노트</a>
+                <a href="bookmarks.html">즐겨찾기</a>
+                <a href="contact.html">문의하기</a>
+            </div>
+            <p>&copy; 2026 합격 패스. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="data/cim.js"></script>
+    <script src="data/fia.js"></script>
+    <script src="data/crea1.js"></script>
+    <script src="data/crea2.js"></script>
+    <script>
+        const WRONG_KEY = 'wrong_questions';
+        const PROGRESS_KEY = 'progress_data';
+
+        function getStats() {
+            try {
+                const wrongs = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
+                const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+                return { wrongs, progress };
+            } catch (e) { return { wrongs: [], progress: {} }; }
+        }
+
+        function renderStats() {
+            const { wrongs, progress } = getStats();
+            const labels = [];
+            const dataValues = [];
+            const detailGrid = document.getElementById('detail-grid');
+            
+            let totalCorrect = 0;
+            let totalQuestions = 0;
+
+            for (let key in window.examData) {
+                const exam = window.examData[key];
+                let examCorrect = 0;
+                let examTotal = 0;
+
+                exam.sections.forEach(s => {
+                    examCorrect += (progress[`${key}_${s.id}`] || 0);
+                    examTotal += (s.questions ? s.questions.length : 0);
+                });
+
+                const percent = examTotal > 0 ? Math.round((examCorrect / examTotal) * 100) : 0;
+                labels.push(exam.title);
+                dataValues.push(percent);
+
+                totalCorrect += examCorrect;
+                totalQuestions += examTotal;
+
+                // 세부 항목 추가
+                const item = document.createElement('div');
+                item.className = 'detail-item';
+                item.innerHTML = `
+                    <span class="detail-val">${percent}%</span>
+                    <span class="detail-label">${exam.title}</span>
+                `;
+                detailGrid.appendChild(item);
+            }
+
+            const avg = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+            document.getElementById('summary-text').innerText = `전체 평균 정답률은 ${avg}% 입니다. ${(avg > 70) ? '현재 합격권에 근접해 있습니다! 취약한 세부 과목만 보완하면 안정적인 합격이 예상됩니다.' : '아직 보완이 필요한 단계입니다. 오답 노트를 활용해 정답률을 70% 이상으로 끌어올리는 것을 목표로 하세요.'}`;
+
+            initChart(labels, dataValues);
+        }
+
+        function initChart(labels, values) {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '정답률 (%)',
+                        data: values,
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                        borderColor: '#4f46e5',
+                        pointBackgroundColor: '#4f46e5',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#4f46e5'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestMin: 0,
+                            suggestMax: 100,
+                            ticks: { stepSize: 20, font: { size: 10 } },
+                            pointLabels: { font: { size: 12, weight: 'bold' } }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', renderStats);
+    </script>
+</body>
+</html>
