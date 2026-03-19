@@ -36,30 +36,50 @@
             background: rgba(79, 70, 229, 0.05);
             border-radius: 1rem;
             border-left: 5px solid var(--primary);
+            margin-bottom: 2rem;
         }
         .detail-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
             width: 100%;
-            margin-top: 2rem;
         }
         .detail-item {
-            padding: 1rem;
-            background: rgba(0,0,0,0.02);
-            border-radius: 0.75rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 1rem;
             text-align: center;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        [data-theme="dark"] .detail-item {
+            background: #1e293b;
+            border-color: #334155;
         }
         .detail-val {
             display: block;
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-weight: 800;
             color: var(--primary);
         }
         .detail-label {
-            font-size: 0.8rem;
-            color: var(--secondary);
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
         }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        .status-good { background: #dcfce7; color: #166534; }
+        .status-warn { background: #fef9c3; color: #854d0e; }
+        .status-none { background: #f1f5f9; color: #475569; }
     </style>
 </head>
 <body>
@@ -72,12 +92,14 @@
         </header>
 
         <div class="stats-card">
-            <h2 style="margin: 0; font-size: 1.2rem;">과목별 정답률 분석</h2>
+            <h2 style="margin: 0; font-size: 1.2rem;">과목별 성취도 레이더</h2>
             <canvas id="statsChart"></canvas>
             
             <div id="stats-summary" class="summary-box">
-                <p style="margin: 0; font-weight: 600; color: var(--primary);">분석 결과</p>
-                <p id="summary-text" style="margin: 0.5rem 0 0 0; font-size: 0.95rem; line-height: 1.6;"></p>
+                <p style="margin: 0; font-weight: 600; color: var(--primary);">💡 학습 가이드</p>
+                <p id="summary-text" style="margin: 0.5rem 0 0 0; font-size: 0.95rem; line-height: 1.6;">
+                    각 과목의 정답률을 바탕으로 분석한 결과입니다. 70% 이상 달성 시 안정권으로 분류됩니다.
+                </p>
             </div>
 
             <div class="detail-grid" id="detail-grid"></div>
@@ -118,8 +140,8 @@
             const dataValues = [];
             const detailGrid = document.getElementById('detail-grid');
             
-            let totalCorrect = 0;
-            let totalQuestions = 0;
+            let bestSubject = { name: '', val: -1 };
+            let worstSubject = { name: '', val: 101 };
 
             for (let key in window.examData) {
                 const exam = window.examData[key];
@@ -135,27 +157,55 @@
                 labels.push(exam.title);
                 dataValues.push(percent);
 
-                totalCorrect += examCorrect;
-                totalQuestions += examTotal;
+                if (examTotal > 0) {
+                    if (percent > bestSubject.val) bestSubject = { name: exam.title, val: percent };
+                    if (percent < worstSubject.val) worstSubject = { name: exam.title, val: percent };
+                }
+
+                // 과목별 상태 결정
+                let statusClass = 'status-none';
+                let statusText = '학습 전';
+                if (examTotal > 0) {
+                    if (percent >= 70) {
+                        statusClass = 'status-good';
+                        statusText = '합격 안정권';
+                    } else {
+                        statusClass = 'status-warn';
+                        statusText = '보완 필요';
+                    }
+                }
 
                 // 세부 항목 추가
                 const item = document.createElement('div');
                 item.className = 'detail-item';
                 item.innerHTML = `
-                    <span class="detail-val">${percent}%</span>
                     <span class="detail-label">${exam.title}</span>
+                    <span class="detail-val">${percent}%</span>
+                    <div><span class="status-badge ${statusClass}">${statusText}</span></div>
+                    <small style="margin-top:0.5rem; color:#666;">${examCorrect} / ${examTotal} 문항</small>
                 `;
                 detailGrid.appendChild(item);
             }
 
-            const avg = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
-            document.getElementById('summary-text').innerText = `전체 평균 정답률은 ${avg}% 입니다. ${(avg > 70) ? '현재 합격권에 근접해 있습니다! 취약한 세부 과목만 보완하면 안정적인 합격이 예상됩니다.' : '아직 보완이 필요한 단계입니다. 오답 노트를 활용해 정답률을 70% 이상으로 끌어올리는 것을 목표로 하세요.'}`;
+            // 요약 텍스트 업데이트
+            if (bestSubject.val !== -1) {
+                let summary = `현재 <strong>${bestSubject.name}</strong> 과목에서 가장 높은 성취도(${bestSubject.val}%)를 보이고 있습니다. `;
+                if (worstSubject.val < 70) {
+                    summary += `상대적으로 정답률이 낮은 <strong>${worstSubject.name}</strong> 과목을 집중적으로 복습해보세요.`;
+                } else {
+                    summary += `모든 과목이 고르게 우수한 성적을 유지하고 있습니다!`;
+                }
+                document.getElementById('summary-text').innerHTML = summary;
+            }
 
             initChart(labels, dataValues);
         }
 
         function initChart(labels, values) {
             const ctx = document.getElementById('statsChart').getContext('2d');
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
             new Chart(ctx, {
                 type: 'radar',
                 data: {
@@ -168,22 +218,46 @@
                         pointBackgroundColor: '#4f46e5',
                         pointBorderColor: '#fff',
                         pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#4f46e5'
+                        pointHoverBorderColor: '#4f46e5',
+                        borderWidth: 2
                     }]
                 },
                 options: {
                     scales: {
                         r: {
-                            angleLines: { display: true },
+                            angleLines: { color: isDark ? '#334155' : '#e2e8f0' },
+                            grid: { color: isDark ? '#334155' : '#e2e8f0' },
                             suggestMin: 0,
                             suggestMax: 100,
-                            ticks: { stepSize: 20, font: { size: 10 } },
-                            pointLabels: { font: { size: 12, weight: 'bold' } }
+                            ticks: { 
+                                stepSize: 20, 
+                                display: false // 수치 라벨 숨김 (깔끔하게)
+                            },
+                            pointLabels: { 
+                                color: textColor,
+                                font: { size: 12, weight: 'bold' } 
+                            }
                         }
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` 정답률: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
                 }
             });
+        }
+
+        // 다크모드 대응
+        function checkTheme() {
+            if (document.body.getAttribute('data-theme') === 'dark') {
+                // 필요시 차트 재렌더링 로직 추가 가능
+            }
         }
 
         window.addEventListener('DOMContentLoaded', renderStats);
