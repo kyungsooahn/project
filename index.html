@@ -131,6 +131,15 @@
     <script src="data/crea1.js"></script>
     <script src="data/crea2.js"></script>
     <script>
+        // PWA Cleanup: Force Unregister
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+        
         const WRONG_KEY = 'wrong_questions';
         const PROGRESS_KEY = 'progress_data';
 
