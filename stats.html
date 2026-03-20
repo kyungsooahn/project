@@ -15,6 +15,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
+    <script src="main.js"></script>
     <style>
         :root {
             --stats-primary: #4f46e5;
@@ -253,7 +254,7 @@
 
         function initCertChart(key, labels, values) {
             const ctx = document.getElementById(`chart-${key}`).getContext('2d');
-            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             
             new Chart(ctx, {
                 type: 'radar',
@@ -299,6 +300,7 @@
             });
         }
 
+        window.addEventListener('themeChanged', renderCertificates);
         window.addEventListener('DOMContentLoaded', renderCertificates);
     </script>
 </body>

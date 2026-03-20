@@ -21,6 +21,7 @@
      crossorigin="anonymous"></script>
     
     <link rel="stylesheet" href="style.css">
+    <script src="main.js"></script>
     <style>
         .category-group { margin-bottom: 3rem; }
         .category-title { font-size: 1.5rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary); display: flex; align-items: center; gap: 0.5rem; }
@@ -153,11 +154,6 @@
                 grid.appendChild(card);
             }
             if (statsText) statsText.innerText = `현재 총 ${globalTotalQ.toLocaleString()}개의 문제가 준비되어 있습니다.`;
-        }
-
-        function toggleTheme() {
-            const body = document.body;
-            body.getAttribute('data-theme') === 'dark' ? body.removeAttribute('data-theme') : body.setAttribute('data-theme', 'dark');
         }
 
         window.addEventListener('DOMContentLoaded', renderExams);
