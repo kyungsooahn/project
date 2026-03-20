@@ -206,6 +206,72 @@
         location.reload();
     };
 
+    // --- 데이터 저장 공용 함수 ---
+
+    window.saveWrongQuestion = async function(q, examKey, examTitle) {
+        const WRONG_KEY = 'wrong_questions';
+        let wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
+
+        // 이미 저장된 오답인지 확인 (중복 방지)
+        if (!wrongQuestions.some(item => item.examKey === examKey && item.q === q.q)) {
+            wrongQuestions.push({
+                ...q,
+                examKey: examKey,
+                examTitle: examTitle,
+                savedAt: new Date().toISOString()
+            });
+            localStorage.setItem(WRONG_KEY, JSON.stringify(wrongQuestions));
+            
+            const user = await window.checkUser();
+            if (user && window.supabaseClient && q.sectionId) {
+                await window.supabaseClient.from('user_items').upsert({
+                    user_id: user.id,
+                    exam_key: examKey,
+                    section_id: parseInt(q.sectionId),
+                    question_id: parseInt(q.id),
+                    item_type: 'wrong'
+                });
+            }
+        }
+    };
+
+    window.saveSolvedQuestion = async function(q, examKey, examTitle) {
+        const SOLVED_KEY = 'solved_questions';
+        const PROGRESS_KEY = 'progress_data';
+        
+        let solvedQuestions = JSON.parse(localStorage.getItem(SOLVED_KEY) || '[]');
+        const isNew = !solvedQuestions.some(item => item.examKey === examKey && item.q === q.q);
+
+        if (isNew) {
+            solvedQuestions.push({
+                ...q,
+                examKey: examKey,
+                examTitle: examTitle,
+                savedAt: new Date().toISOString()
+            });
+            localStorage.setItem(SOLVED_KEY, JSON.stringify(solvedQuestions));
+
+            if (q.sectionId) {
+                let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+                const key = `${examKey}_${q.sectionId}`;
+                if (!progress[key]) progress[key] = 0;
+                progress[key] += 1;
+                localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+
+                const user = await window.checkUser();
+                if (user && window.supabaseClient) {
+                    await window.supabaseClient.from('user_progress').upsert({
+                        user_id: user.id,
+                        exam_key: examKey,
+                        section_id: parseInt(q.sectionId),
+                        correct_count: progress[key],
+                        updated_at: new Date()
+                    }, { onConflict: 'user_id, exam_key, section_id' });
+                }
+            }
+        }
+    };
+
     // 페이지 로드 시 UI 업데이트
     window.addEventListener('DOMContentLoaded', window.updateAuthUI);
 })();

@@ -299,73 +299,22 @@
             });
         }
 
-        async function saveWrongQuestion(q) {
-            let wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
-            const examData = window.examData[examKey];
-
-            if (!wrongQuestions.some(item => item.examKey === examKey && item.q === q.q)) {
-                wrongQuestions.push({
-                    ...q,
-                    examKey: examKey,
-                    examTitle: examData.title,
-                    savedAt: new Date().toISOString()
-                });
-                localStorage.setItem(WRONG_KEY, JSON.stringify(wrongQuestions));
-                
-                const user = await window.checkUser();
-                if (user && window.supabaseClient) {
-                    await window.supabaseClient.from('user_items').upsert({
-                        user_id: user.id, exam_key: examKey, section_id: parseInt(q.sectionId),
-                        question_id: parseInt(q.id), item_type: 'wrong'
-                    });
-                }
-            }
-        }
-
-        async function saveSolvedQuestion(q) {
-            let solvedQuestions = JSON.parse(localStorage.getItem(SOLVED_KEY) || '[]');
-            const examData = window.examData[examKey];
-
-            if (!solvedQuestions.some(item => item.examKey === examKey && item.q === q.q)) {
-                solvedQuestions.push({
-                    ...q,
-                    examKey: examKey,
-                    examTitle: examData.title,
-                    savedAt: new Date().toISOString()
-                });
-                localStorage.setItem(SOLVED_KEY, JSON.stringify(solvedQuestions));
-            }
-            
-            let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
-            const key = `${examKey}_${q.sectionId}`;
-            if (!progress[key]) progress[key] = 0;
-            progress[key] += 1;
-            localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-
-            const user = await window.checkUser();
-            if (user && window.supabaseClient) {
-                await window.supabaseClient.from('user_progress').upsert({
-                    user_id: user.id, exam_key: examKey, section_id: parseInt(q.sectionId),
-                    correct_count: progress[key], updated_at: new Date()
-                }, { onConflict: 'user_id, exam_key, section_id' });
-            }
-        }
-
         function checkAnswer(idx) {
             if (answered || idx >= shuffledOptions.length) return;
             answered = true;
 
             const q = questions[currentIdx];
             const buttons = document.querySelectorAll('.option-btn');
+            const examTitle = window.examData[examKey].title;
             
             if (idx === correctOptionIdx) {
                 buttons[idx].classList.add('correct');
                 score++;
-                saveSolvedQuestion(q);
+                window.saveSolvedQuestion(q, examKey, examTitle);
             } else {
                 buttons[idx].classList.add('wrong');
                 buttons[correctOptionIdx].classList.add('correct');
-                saveWrongQuestion(q);
+                window.saveWrongQuestion(q, examKey, examTitle);
             }
 
             document.getElementById('explanation-text').textContent = q.exp;

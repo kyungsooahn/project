@@ -192,49 +192,50 @@
 
             if (sectionId) {
                 const section = exam.sections.find(s => s.id === sectionId);
+                const questionsWithId = section.questions.map(q => ({...q, sectionId: section.id}));
                 examParts = [{
-                    qs: shuffle([...section.questions]),
+                    qs: shuffle([...questionsWithId]),
                     time: section.questions.length * 90,
                     name: section.name
                 }];
             } else {
                 if (examKey === 'cim') {
                     examParts = [{
-                        qs: [...shuffle([...exam.sections[0].questions]).slice(0, 20),
-                             ...shuffle([...exam.sections[1].questions]).slice(0, 30),
-                             ...shuffle([...exam.sections[2].questions]).slice(0, 50)],
+                        qs: [...shuffle(exam.sections[0].questions.map(q => ({...q, sectionId: exam.sections[0].id}))).slice(0, 20),
+                             ...shuffle(exam.sections[1].questions.map(q => ({...q, sectionId: exam.sections[1].id}))).slice(0, 30),
+                             ...shuffle(exam.sections[2].questions.map(q => ({...q, sectionId: exam.sections[2].id}))).slice(0, 50)],
                         time: 120 * 60, name: "전과목 통합 실전"
                     }];
                 } else if (examKey === 'fia') {
                     examParts = [{
-                        qs: [...shuffle([...exam.sections[0].questions]).slice(0, 25),
-                             ...shuffle([...exam.sections[1].questions]).slice(0, 35),
-                             ...shuffle([...exam.sections[2].questions]).slice(0, 20),
-                             ...shuffle([...exam.sections[3].questions]).slice(0, 20)],
+                        qs: [...shuffle(exam.sections[0].questions.map(q => ({...q, sectionId: exam.sections[0].id}))).slice(0, 25),
+                             ...shuffle(exam.sections[1].questions.map(q => ({...q, sectionId: exam.sections[1].id}))).slice(0, 35),
+                             ...shuffle(exam.sections[2].questions.map(q => ({...q, sectionId: exam.sections[2].id}))).slice(0, 20),
+                             ...shuffle(exam.sections[3].questions.map(q => ({...q, sectionId: exam.sections[3].id}))).slice(0, 20)],
                         time: 120 * 60, name: "전과목 통합 실전"
                     }];
                 } else if (examKey === 'crea1') {
                     examParts = [{
-                        qs: [...shuffle([...exam.sections[0].questions]).slice(0, 40),
-                             ...shuffle([...exam.sections[1].questions]).slice(0, 40)],
+                        qs: [...shuffle(exam.sections[0].questions.map(q => ({...q, sectionId: exam.sections[0].id}))).slice(0, 40),
+                             ...shuffle(exam.sections[1].questions.map(q => ({...q, sectionId: exam.sections[1].id}))).slice(0, 40)],
                         time: 100 * 60, name: "1차 통합 실전"
                     }];
                 } else if (examKey === 'crea2') {
                     examParts = [
                         {
-                            qs: [...shuffle([...exam.sections[0].questions]).slice(0, 40),
-                                 ...shuffle([...exam.sections[1].questions]).slice(0, 40)],
+                            qs: [...shuffle(exam.sections[0].questions.map(q => ({...q, sectionId: exam.sections[0].id}))).slice(0, 40),
+                                 ...shuffle(exam.sections[1].questions.map(q => ({...q, sectionId: exam.sections[1].id}))).slice(0, 40)],
                             time: 100 * 60, name: "1교시 (중개사법, 공법)"
                         },
                         {
-                            qs: [...shuffle([...exam.sections[2].questions]).slice(0, 40)],
+                            qs: [...shuffle(exam.sections[2].questions.map(q => ({...q, sectionId: exam.sections[2].id}))).slice(0, 40)],
                             time: 50 * 60, name: "2교시 (공시/세법)"
                         }
                     ];
                 } else {
                     let allQs = [];
                     exam.sections.forEach(s => {
-                        allQs = allQs.concat(shuffle([...s.questions]).slice(0, 20));
+                        allQs = allQs.concat(shuffle(s.questions.map(q => ({...q, sectionId: s.id}))).slice(0, 20));
                     });
                     examParts = [{ qs: allQs, time: allQs.length * 90, name: "통합 모의고사" }];
                 }
@@ -397,7 +398,12 @@
             accumulatedResults.forEach((res, i) => {
                 const q = res.q;
                 const isCorrect = res.userA === q.answer;
-                if (isCorrect) correctCount++;
+                if (isCorrect) {
+                    correctCount++;
+                    if (window.saveSolvedQuestion) window.saveSolvedQuestion(q, examKey, window.examData[examKey].title);
+                } else {
+                    if (window.saveWrongQuestion) window.saveWrongQuestion(q, examKey, window.examData[examKey].title);
+                }
 
                 const item = document.createElement('div');
                 item.className = `mock-result-item ${isCorrect ? 'correct' : 'wrong'}`;
