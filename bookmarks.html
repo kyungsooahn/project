@@ -22,6 +22,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <style>
         .section-group {
@@ -183,8 +184,18 @@
             container.innerHTML = html;
         }
 
-        function deleteBookmark(idx) {
+        async function deleteBookmark(idx) {
             let bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]');
+            const item = bookmarks[idx];
+            
+            const user = await window.checkUser();
+            if (user && window.supabaseClient && item) {
+                await window.supabaseClient.from('user_items').delete().match({
+                    user_id: user.id, exam_key: item.examKey, section_id: parseInt(item.sectionId),
+                    question_id: parseInt(item.id), item_type: 'bookmark'
+                });
+            }
+
             bookmarks.splice(idx, 1);
             localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
             renderBookmarks();

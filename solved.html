@@ -17,6 +17,7 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1480804086381400"
      crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <style>
         .filter-container {
@@ -229,19 +230,27 @@
             container.innerHTML = html;
         }
 
-        function deleteSolved(originalIdx) {
+        async function deleteSolved(originalIdx) {
             if (!confirm('이 문제를 보관함에서 삭제하시겠습니까? 삭제하면 퀴즈에서 다시 노출됩니다.')) return;
             
             let solvedQuestions = JSON.parse(localStorage.getItem(SOLVED_KEY) || '[]');
             const q = solvedQuestions[originalIdx];
             
-            // Also need to decrement the progress count for index.html
             const PROGRESS_KEY = 'progress_data';
             let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
             const key = `${q.examKey}_${q.sectionId}`;
             if (progress[key] > 0) {
                 progress[key] -= 1;
                 localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+                
+                // Supabase 진도율 업데이트
+                const user = await window.checkUser();
+                if (user && window.supabaseClient) {
+                    await window.supabaseClient.from('user_progress').upsert({
+                        user_id: user.id, exam_key: q.examKey, section_id: parseInt(q.sectionId),
+                        correct_count: progress[key], updated_at: new Date()
+                    }, { onConflict: 'user_id, exam_key, section_id' });
+                }
             }
 
             solvedQuestions.splice(originalIdx, 1);

@@ -21,6 +21,7 @@
      crossorigin="anonymous"></script>
     
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <style>
         .category-group { margin-bottom: 3rem; }
@@ -45,6 +46,7 @@
                 <p id="total-stats" style="font-size: 0.8rem; opacity: 0.8; margin-top: 0.25rem;"></p>
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end;">
+                <div id="auth-container" style="display: flex; align-items: center; gap: 0.5rem;"></div>
                 <button onclick="location.href='stats.html'" class="theme-toggle" title="통계 분석">📊</button>
                 <button onclick="location.href='bookmarks.html'" class="theme-toggle" title="즐겨찾기">⭐</button>
                 <button onclick="location.href='solved.html'" class="theme-toggle" title="맞춘 문제">✅</button>
@@ -157,6 +159,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', renderExams);
+        window.addEventListener('dataLoaded', renderExams);
     </script>
 </body>
 </html>

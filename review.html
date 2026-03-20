@@ -22,6 +22,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <style>
         .filter-container {
@@ -446,10 +447,20 @@
             container.innerHTML = html;
         }
 
-        function deleteWrong(originalIdx) {
+        async function deleteWrong(originalIdx) {
             if (!confirm('이 문제를 오답 노트에서 삭제하시겠습니까?')) return;
             
             let wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
+            const item = wrongQuestions[originalIdx];
+
+            const user = await window.checkUser();
+            if (user && window.supabaseClient && item) {
+                await window.supabaseClient.from('user_items').delete().match({
+                    user_id: user.id, exam_key: item.examKey, section_id: parseInt(item.sectionId),
+                    question_id: parseInt(item.id), item_type: 'wrong'
+                });
+            }
+
             wrongQuestions.splice(originalIdx, 1);
             localStorage.setItem(WRONG_KEY, JSON.stringify(wrongQuestions));
             renderWrongQuestions();
