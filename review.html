@@ -140,31 +140,24 @@
             document.getElementById('review-nav').style.display = 'none';
             
             // 프로그레스 업데이트
-            const pct = ((currentReviewIdx) / reviewQuestions.length) * 100;
+            const pct = (currentReviewIdx / reviewQuestions.length) * 100;
             document.getElementById('review-progress-fill').style.width = `${pct}%`;
             document.getElementById('review-progress-text').innerText = `오늘의 복습 (${currentReviewIdx + 1}/${reviewQuestions.length})`;
-container.innerHTML = `
-    <div class="review-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-            <span class="wrong-meta">${q.examTitle} > ${q.sectionName || '전체'}</span>
-            <button onclick="readCurrentReviewQuestion()" class="theme-toggle" title="음성으로 듣기" style="background: none; border: 1px solid #ddd; padding: 5px 10px; font-size: 1rem;">🔊</button>
-        </div>
-        <h2 style="margin: 0 0 2rem 0; line-height: 1.5; font-size: 1.2rem;">${q.q}</h2>
-        <div id="review-options"></div>
-        <div class="explanation" id="review-exp" style="display:none; margin-top: 1.5rem;">
-            <strong style="color:var(--primary)">💡 해설</strong>
-            <p style="margin-top:0.5rem; font-size:0.9rem;">${q.exp}</p>
-        </div>
-    </div>
-`;
-...
-function readCurrentReviewQuestion() {
-const q = reviewQuestions[currentReviewIdx];
-const text = `${q.q}. 1번 ${q.options[0]}. 2번 ${q.options[1]}. 3번 ${q.options[2]}. 4번 ${q.options[3]}`;
-window.speakText(text);
-}
 
-async function checkReviewAnswer(idx) {
+            container.innerHTML = `
+                <div class="review-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <span class="wrong-meta">${q.examTitle} > ${q.sectionName || '전체'}</span>
+                        <button onclick="readCurrentReviewQuestion()" class="theme-toggle" title="음성으로 듣기" style="background: none; border: 1px solid #ddd; padding: 5px 10px; font-size: 1rem;">🔊</button>
+                    </div>
+                    <h2 style="margin: 0 0 2rem 0; line-height: 1.5; font-size: 1.2rem;">${q.q}</h2>
+                    <div id="review-options"></div>
+                    <div class="explanation" id="review-exp" style="display:none; margin-top: 1.5rem;">
+                        <strong style="color:var(--primary)">💡 해설</strong>
+                        <p style="margin-top:0.5rem; font-size:0.9rem;">${q.exp}</p>
+                    </div>
+                </div>
+            `;
 
             const optContainer = document.getElementById('review-options');
             q.options.forEach((opt, i) => {
@@ -174,6 +167,12 @@ async function checkReviewAnswer(idx) {
                 btn.onclick = () => checkReviewAnswer(i);
                 optContainer.appendChild(btn);
             });
+        }
+
+        function readCurrentReviewQuestion() {
+            const q = reviewQuestions[currentReviewIdx];
+            const text = `${q.q}. 1번 ${q.options[0]}. 2번 ${q.options[1]}. 3번 ${q.options[2]}. 4번 ${q.options[3]}`;
+            if (window.speakText) window.speakText(text);
         }
 
         async function checkReviewAnswer(idx) {
