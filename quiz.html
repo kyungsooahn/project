@@ -12,7 +12,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>시험 학습 모드</title>
+    <title>LITE - 시험 학습 모드</title>
     <meta name="google-adsense-account" content="ca-pub-1480804086381400">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1480804086381400"
      crossorigin="anonymous"></script>
@@ -50,7 +50,7 @@
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
                 <span id="timer-display" class="timer-badge">00:00</span>
-                <a href="index.html" style="text-decoration: none; font-size: 1.5rem;">🏠</a>
+                <div style="display: flex; flex-direction: column;"><a href="index.html" class="lite-logo">LI<span>TE</span></a><div class="lite-tagline">License Is Talent</div></div>
             </div>
         </header>
 
@@ -63,7 +63,10 @@
                 </div>
             </div>
 
-            <h2 id="question-text" style="margin-bottom: 2rem; line-height: 1.5; font-size: 1.15rem; word-break: keep-all;">질문 내용</h2>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 1rem;">
+                <h2 id="question-text" style="margin: 0; line-height: 1.5; font-size: 1.15rem; word-break: keep-all; flex: 1;">질문 내용</h2>
+                <button onclick="readCurrentQuestion()" class="theme-toggle" title="음성으로 듣기" style="background: none; border: 1px solid #ddd; padding: 5px 10px; font-size: 1rem;">🔊</button>
+            </div>
 
             <div id="options-container"></div>
 
@@ -107,7 +110,7 @@
                 <a href="review.html">오답 노트</a>
                 <a href="contact.html">문의하기</a>
             </div>
-            <p>&copy; 2026 합격 패스. All rights reserved.</p>
+            <p>&copy; 2026 LITE. All rights reserved.</p>
         </footer>
     </div>
 
@@ -249,8 +252,8 @@
                 bookmarks.splice(foundIdx, 1);
                 if (user && window.supabaseClient) {
                     await window.supabaseClient.from('user_items').delete().match({
-                        user_id: user.id, exam_key: examKey, section_id: parseInt(sectionId),
-                        question_id: parseInt(currentQ.id), item_type: 'bookmark'
+                        user_id: user.id, exam_key: examKey, section_id: toNum(sectionId),
+                        question_id: toNum(currentQ.id), item_type: 'bookmark'
                     });
                 }
             } else {
@@ -259,8 +262,8 @@
                 });
                 if (user && window.supabaseClient) {
                     await window.supabaseClient.from('user_items').upsert({
-                        user_id: user.id, exam_key: examKey, section_id: parseInt(sectionId),
-                        question_id: parseInt(currentQ.id), item_type: 'bookmark'
+                        user_id: user.id, exam_key: examKey, section_id: toNum(sectionId),
+                        question_id: toNum(currentQ.id), item_type: 'bookmark'
                     });
                 }
             }
@@ -268,6 +271,11 @@
             updateBookmarkUI();
         }
 
+        function readCurrentQuestion() {
+            const q = questions[currentIdx];
+            const text = `${q.q}. 1번 ${q.options[0]}. 2번 ${q.options[1]}. 3번 ${q.options[2]}. 4번 ${q.options[3]}`;
+            window.speakText(text);
+        }
 
         function showQuestion() {
             answered = false;

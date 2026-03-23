@@ -47,6 +47,7 @@
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end;">
                 <div id="auth-container" style="display: flex; align-items: center; gap: 0.5rem;"></div>
+                <div id="streak-badge" style="display: none; background: rgba(255, 107, 107, 0.1); color: #ff6b6b; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid rgba(255, 107, 107, 0.2);">🔥 <span id="streak-count">0</span>일째</div>
                 <button onclick="location.href='stats.html'" class="theme-toggle" title="통계 분석">📊</button>
                 <button onclick="location.href='bookmarks.html'" class="theme-toggle" title="즐겨찾기">⭐</button>
                 <button onclick="location.href='solved.html'" class="theme-toggle" title="맞춘 문제">✅</button>
@@ -215,13 +216,25 @@
             }
         }
 
+        function updateStreakUI() {
+            const streak = window.getStreak ? window.getStreak() : 0;
+            const badge = document.getElementById('streak-badge');
+            const count = document.getElementById('streak-count');
+            if (streak > 0 && badge && count) {
+                badge.style.display = 'flex';
+                count.innerText = streak;
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             renderExams();
             checkReviews();
+            updateStreakUI();
         });
         window.addEventListener('dataLoaded', () => {
             renderExams();
             checkReviews();
+            updateStreakUI();
         });
     </script>
 </body>

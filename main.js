@@ -286,7 +286,51 @@
         localStorage.removeItem('wrong_questions');
         localStorage.removeItem('bookmarked_questions');
         localStorage.removeItem('solved_questions');
+        location.removeItem('learning_streak');
         location.reload();
+    };
+
+    // --- 스트릭 관리 기능 ---
+    window.updateStreak = function() {
+        const STREAK_KEY = 'learning_streak';
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        
+        let streakData = JSON.parse(localStorage.getItem(STREAK_KEY) || '{"count": 0, "lastDate": ""}');
+        
+        if (streakData.lastDate === today) return streakData.count;
+
+        const lastDate = new Date(streakData.lastDate);
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        if (streakData.lastDate === yesterdayStr) {
+            streakData.count += 1;
+        } else {
+            streakData.count = 1;
+        }
+        
+        streakData.lastDate = today;
+        localStorage.setItem(STREAK_KEY, JSON.stringify(streakData));
+        return streakData.count;
+    };
+
+    window.getStreak = function() {
+        const STREAK_KEY = 'learning_streak';
+        const streakData = JSON.parse(localStorage.getItem(STREAK_KEY) || '{"count": 0, "lastDate": ""}');
+        if (streakData.count === 0) return 0;
+
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        const lastDate = new Date(streakData.lastDate);
+        
+        // 오늘이 아니고 어제도 아니면 스트릭 종료
+        const diffTime = Math.abs(now - lastDate);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        if (streakData.lastDate !== today && diffDays > 1) return 0;
+        return streakData.count;
     };
 
     window.saveWrongQuestion = async function(q, examKey, examTitle) {
@@ -316,6 +360,7 @@
         }
 
         localStorage.setItem(WRONG_KEY, JSON.stringify(wrongQuestions));
+        window.updateStreak();
         const user = await window.checkUser();
         if (user && window.supabaseClient && q.sectionId) {
             await window.supabaseClient.from('user_items').upsert({
@@ -355,6 +400,7 @@
                 item.wrongCount = (item.wrongCount || 0) + 1;
             }
             localStorage.setItem(WRONG_KEY, JSON.stringify(wrongQuestions));
+            window.updateStreak();
         }
     };
 
@@ -366,6 +412,7 @@
         if (isNew) {
             solvedQuestions.push({ ...q, examKey: examKey, examTitle: examTitle, savedAt: new Date().toISOString() });
             localStorage.setItem(SOLVED_KEY, JSON.stringify(solvedQuestions));
+            window.updateStreak();
             if (q.sectionId) {
                 let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
                 const key = `${examKey}_${q.sectionId}`;
@@ -381,6 +428,18 @@
                 }
             }
         }
+    };
+
+    // --- 4. TTS (음성 읽어주기) 기능 ---
+    window.speakText = function(text) {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel(); // 진행 중인 음성 중단
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ko-KR';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
     };
 
     window.addEventListener('load', window.updateAuthUI);
