@@ -12,10 +12,10 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>합격 패스 - 전문 자격증 기출 문제 마스터 🎓</title>
+    <title>LITE - 스마트 자격증 학습 플랫폼 🎓</title>
     
-    <meta name="description" content="투자자산운용사, 금융투자분석사, 공인중개사 자격증 합격을 위한 최적의 학습 도구. 무료 기출 문제와 오답 노트를 이용해 보세요.">
-    <meta name="keywords" content="투자자산운용사, 금융투자분석사, 공인중개사, 기출문제, 자격증, 오답노트">
+    <meta name="description" content="투자자산운용사, 금융투자분석사, 공인중개사 자격증 합격을 위한 최적의 학습 도구. LITE에서 무료 기출 문제와 오답 노트를 이용해 보세요.">
+    <meta name="keywords" content="LITE, 투자자산운용사, 금융투자분석사, 공인중개사, 기출문제, 자격증, 오답노트">
     <meta name="google-adsense-account" content="ca-pub-1480804086381400">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1480804086381400"
      crossorigin="anonymous"></script>
@@ -41,9 +41,9 @@
 <body>
     <div class="container">
         <header>
-            <div>
-                <h1>🎓 합격 패스</h1>
-                <p id="total-stats" style="font-size: 0.8rem; opacity: 0.8; margin-top: 0.25rem;"></p>
+            <div style="display: flex; flex-direction: column;">
+                <a href="index.html" class="lite-logo">LI<span>TE</span></a>
+                <div class="lite-tagline">License Is Talent</div>
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end;">
                 <div id="auth-container" style="display: flex; align-items: center; gap: 0.5rem;"></div>
@@ -56,11 +56,11 @@
         </header>
 
         <section class="hero-section">
-            <h2>자격증 합격을 위한 스마트한 동반자</h2>
-            <p>합격 패스는 수험생 여러분의 효율적인 학습을 위해 설계되었습니다. 실제 기출 문제를 바탕으로 한 <strong>원본 데이터 세트</strong>를 무제한으로 제공하며, 학습 데이터는 브라우저에 안전하게 저장됩니다. 지금 바로 무료로 학습을 시작하세요!</p>
+            <h2>LITE와 함께하는 스마트한 자격증 합격</h2>
+            <p><strong>LITE</strong>는 수험생 여러분의 효율적인 학습을 위해 설계되었습니다. 실제 기출 문제를 바탕으로 한 <strong>원본 데이터 세트</strong>를 무제한으로 제공하며, 학습 데이터는 클라우드에 안전하게 저장됩니다. 지금 바로 무료로 학습을 시작하세요!</p>
         </section>
 
-        <section class="info-section" style="margin: 2rem 0; padding: 1.5rem; background: rgba(0,0,0,0.02); border-radius: 1rem; border: 1px solid rgba(0,0,0,0.05);">
+        <section class="info-section" style="margin: 2rem 0; padding: 1.5rem; background: rgba(99, 102, 241, 0.05); border-radius: 1rem; border: 1px solid rgba(99, 102, 241, 0.1);">
             <h3>📘 학습 가능한 주요 자격증</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
                 <div>
@@ -110,7 +110,7 @@
                 <a href="stats.html">학습 통계</a>
                 <a href="contact.html">문의하기</a>
             </div>
-            <p>&copy; 2026 합격 패스. All rights reserved.</p>
+            <p>&copy; 2026 LITE. All rights reserved.</p>
         </footer>
     </div>
 
@@ -185,7 +185,7 @@
                 `;
                 grid.appendChild(card);
             }
-            if (statsText) statsText.innerText = `현재 총 ${globalTotalQ.toLocaleString()}개의 문제가 준비되어 있습니다.`;
+            // if (statsText) statsText.innerText = `현재 총 ${globalTotalQ.toLocaleString()}개의 문제가 준비되어 있습니다.`;
         }
 
         window.addEventListener('DOMContentLoaded', renderExams);

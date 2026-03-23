@@ -1,19 +1,66 @@
 /* 공통 스타일 */
 :root {
-  --primary: #4f46e5;
+  --primary: #6366f1; /* Indigo 500 */
+  --primary-dark: #4f46e5; /* Indigo 600 */
   --secondary: #64748b;
-  --bg: #f1f5f9;
+  --bg: #f8fafc;
   --card: #ffffff;
-  --text: #1e293b;
-  --success: #22c55e;
+  --text: #0f172a;
+  --success: #10b981;
   --danger: #ef4444;
+  --accent: #818cf8;
 }
 
 [data-theme="dark"] {
-  --bg: #0f172a;
-  --card: #1e293b;
+  --bg: #020617;
+  --card: #0f172a;
   --text: #f1f5f9;
   --primary: #818cf8;
+  --primary-dark: #6366f1;
+}
+
+/* LITE Logo Styling */
+.lite-logo {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: transform 0.2s;
+}
+
+.lite-logo:hover {
+    transform: scale(1.02);
+}
+
+.lite-logo span {
+    color: var(--primary);
+    position: relative;
+}
+
+.lite-logo span::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--success);
+    opacity: 0.3;
+    border-radius: 2px;
+}
+
+.lite-tagline {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--secondary);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: -4px;
+    opacity: 0.8;
 }
 
 body {
