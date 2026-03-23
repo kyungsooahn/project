@@ -292,17 +292,69 @@
     window.saveWrongQuestion = async function(q, examKey, examTitle) {
         const WRONG_KEY = 'wrong_questions';
         let wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
-        if (!wrongQuestions.some(item => item.examKey === examKey && item.q === q.q)) {
-            const newItem = { ...q, examKey: examKey, examTitle: examTitle, savedAt: new Date().toISOString() };
+        let itemIdx = wrongQuestions.findIndex(item => item.examKey === examKey && item.q === q.q);
+        
+        const now = new Date();
+        const nextReview = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 기본 1일 후
+
+        if (itemIdx === -1) {
+            const newItem = { 
+                ...q, 
+                examKey: examKey, 
+                examTitle: examTitle, 
+                savedAt: now.toISOString(),
+                level: 1,
+                nextReviewDate: nextReview.toISOString(),
+                wrongCount: 1
+            };
             wrongQuestions.push(newItem);
-            localStorage.setItem(WRONG_KEY, JSON.stringify(wrongQuestions));
-            const user = await window.checkUser();
-            if (user && window.supabaseClient && q.sectionId) {
-                await window.supabaseClient.from('user_items').upsert({
-                    user_id: user.id, exam_key: examKey, section_id: toNum(q.sectionId),
-                    question_id: toNum(q.id), item_type: 'wrong'
-                }, { onConflict: 'user_id, exam_key, section_id, question_id, item_type' });
+        } else {
+            // 이미 있는 경우 레벨 리셋 및 시간 갱신
+            wrongQuestions[itemIdx].level = 1;
+            wrongQuestions[itemIdx].nextReviewDate = nextReview.toISOString();
+            wrongQuestions[itemIdx].wrongCount = (wrongQuestions[itemIdx].wrongCount || 0) + 1;
+        }
+
+        localStorage.setItem(WRONG_KEY, JSON.stringify(wrongQuestions));
+        const user = await window.checkUser();
+        if (user && window.supabaseClient && q.sectionId) {
+            await window.supabaseClient.from('user_items').upsert({
+                user_id: user.id, exam_key: examKey, section_id: toNum(q.sectionId),
+                question_id: toNum(q.id), item_type: 'wrong'
+            }, { onConflict: 'user_id, exam_key, section_id, question_id, item_type' });
+        }
+    };
+
+    window.updateReviewStatus = async function(q, examKey, isCorrect) {
+        const WRONG_KEY = 'wrong_questions';
+        let wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
+        let itemIdx = wrongQuestions.findIndex(item => item.examKey === examKey && item.q === q.q);
+
+        if (itemIdx > -1) {
+            const item = wrongQuestions[itemIdx];
+            if (isCorrect) {
+                // 맞히면 레벨업 (1일 -> 3일 -> 7일 -> 완료)
+                item.level = (item.level || 1) + 1;
+                let days = item.level === 2 ? 3 : (item.level === 3 ? 7 : 14);
+                
+                if (item.level > 3) {
+                    // 3단계 완료 시 오답 노트에서 제거 (선택 사항)
+                    // wrongQuestions.splice(itemIdx, 1); 
+                    item.nextReviewDate = null; // 복습 완료
+                } else {
+                    const nextDate = new Date();
+                    nextDate.setDate(nextDate.getDate() + days);
+                    item.nextReviewDate = nextDate.toISOString();
+                }
+            } else {
+                // 틀리면 1단계로 리셋
+                item.level = 1;
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + 1);
+                item.nextReviewDate = nextDate.toISOString();
+                item.wrongCount = (item.wrongCount || 0) + 1;
             }
+            localStorage.setItem(WRONG_KEY, JSON.stringify(wrongQuestions));
         }
     };
 
