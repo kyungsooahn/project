@@ -13,13 +13,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>서비스 소개 - 합격 패스 🎓</title>
+    <meta name="description" content="합격 패스가 제공하는 스마트한 자격증 학습 기능과 지원하는 자격증(투자자산운용사, 금융투자분석사, 공인중개사)에 대해 알아보세요.">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <style>
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
             margin: 2rem 0;
         }
@@ -31,22 +32,26 @@
         }
         [data-theme="dark"] .feature-item {
             background: rgba(255,255,255,0.03);
-            border-color: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,1);
         }
         .feature-item h3 {
             margin-top: 0;
             color: var(--primary);
             font-size: 1.1rem;
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            align-items: center; gap: 0.5rem;
         }
         .feature-item p {
             font-size: 0.9rem;
             margin-bottom: 0;
             color: var(--secondary);
-            line-height: 1.5;
+            line-height: 1.6;
         }
+        .content-page section { margin-bottom: 2.5rem; }
+        .content-page h2 { border-left: 4px solid var(--primary); padding-left: 0.75rem; margin-bottom: 1rem; }
+        .exam-info-card { background: var(--primary); color: white; padding: 1.5rem; border-radius: 1rem; margin-top: 1rem; }
+        .exam-info-card h4 { margin-top: 0; margin-bottom: 0.5rem; }
+        .exam-info-card p { margin-bottom: 0; font-size: 0.9rem; opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -60,53 +65,69 @@
         
         <main class="content-page">
             <section>
-                <h2>스마트한 자격증 합격 파트너</h2>
-                <p><strong>합격 패스</strong>는 전문 자격증 취득을 목표로 하는 모든 수험생을 위해 설계된 <strong>무료 개방형 학습 플랫폼</strong>입니다. 복잡한 가입 절차 없이 브라우저의 로컬 저장소(LocalStorage)를 활용하여 개인의 학습 데이터를 안전하고 빠르게 관리합니다.</p>
+                <h2>🚀 합격 패스의 비전</h2>
+                <p><strong>합격 패스</strong>는 지식의 평등한 기회를 믿습니다. 고가의 수험서와 유료 강의 없이도 누구나 전문 자격증에 도전하고 합격할 수 있는 환경을 만드는 것이 우리의 목표입니다. 우리는 최신 기출 데이터를 바탕으로 가장 효율적인 학습 경로를 제시합니다.</p>
+                <p>모든 데이터는 서버가 아닌 사용자의 브라우저에 직접 저장되므로, 개인정보 유출 걱정 없이 안심하고 학습에만 집중할 수 있는 <strong>프라이버시 중심의 학습 도구</strong>입니다.</p>
             </section>
 
-            <div class="feature-grid">
-                <div class="feature-item">
-                    <h3>📱 모바일 최적화</h3>
-                    <p>언제 어디서나 학습할 수 있도록 스마트폰과 태블릿 환경에 완벽하게 최적화된 반응형 인터페이스를 제공합니다.</p>
+            <section>
+                <h2>💡 주요 기능</h2>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h3>📱 모바일 최적화</h3>
+                        <p>출퇴근 길, 쉬는 시간 등 자투리 시간을 활용할 수 있도록 스마트폰과 태블릿 환경에 완벽하게 최적화된 인터페이스를 제공합니다.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>📊 상세 통계 분석</h3>
+                        <p>단순히 문제를 푸는 것을 넘어, 과목별 정답률과 성취도를 시각화하여 본인의 취약점을 즉각적으로 파악하고 보완할 수 있습니다.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>📝 스마트 오답 노트</h3>
+                        <p>틀린 문제만 자동으로 모아주는 오답 노트 기능을 통해 반복 학습의 효율을 극대화합니다. 시험 직전 나만의 약점 노트를 확인하세요.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>⏱️ 실전 모의고사</h3>
+                        <p>실제 시험과 동일한 문항 수와 제한 시간을 설정하여 실전 감각을 키울 수 있는 시뮬레이션 환경을 제공합니다.</p>
+                    </div>
                 </div>
-                <div class="feature-item">
-                    <h3>📊 상세 통계 분석</h3>
-                    <p>레이더 차트와 성취도 그래프를 통해 과목별 강점과 약점을 시각적으로 분석하고 학습 등급을 확인하세요.</p>
-                </div>
-                <div class="feature-item">
-                    <h3>📝 PDF 오답 노트</h3>
-                    <p>틀린 문제만 모아 2단 요약형 PDF로 생성할 수 있습니다. 시험 직전 오프라인 복습용으로 활용하세요.</p>
-                </div>
-                <div class="feature-item">
-                    <h3>⏱️ 실전 모의고사</h3>
-                    <p>실제 시험과 동일한 시간과 문항 수로 구성된 모의고사를 통해 실전 감각을 극대화할 수 있습니다.</p>
-                </div>
-                <div class="feature-item">
-                    <h3>⭐ 즐겨찾기 시스템</h3>
-                    <p>중요하거나 헷갈리는 문제를 북마크하여 나만의 핵심 문제집을 만들고 집중 학습할 수 있습니다.</p>
-                </div>
-                <div class="feature-item">
-                    <h3>🌙 다크 모드 지원</h3>
-                    <p>사용자의 시력 보호를 위해 주변 환경에 맞춰 테마를 자유롭게 전환하며 집중력을 유지할 수 있습니다.</p>
-                </div>
-            </div>
+            </section>
 
             <section>
-                <h2>보안 및 데이터 관리</h2>
-                <p>합격 패스는 사용자의 개인 정보를 서버에 저장하지 않습니다. 모든 학습 진행 상황, 오답 기록, 즐겨찾기는 사용자의 브라우저 내부에만 저장되어 프라이버시를 완벽하게 보호합니다. (브라우저 캐시 삭제 시 데이터가 초기화될 수 있으니 주의해 주세요.)</p>
+                <h2>📚 지원 자격증 안내</h2>
+                <p>현재 합격 패스에서는 아래와 같은 전문 자격증의 기출 문제 데이터를 제공하고 있습니다. 각 데이터는 주기적으로 업데이트되어 최신 출제 경향을 반영합니다.</p>
+                
+                <div class="exam-info-card">
+                    <h4>투자자산운용사 (CIM)</h4>
+                    <p>펀드매니저가 되기 위한 필수 자격증으로, 자본시장법부터 주식/채권 운용 전략까지 폭넓은 금융 지식을 다룹니다.</p>
+                </div>
+
+                <div class="exam-info-card" style="background: var(--secondary);">
+                    <h4>금융투자분석사 (FIA)</h4>
+                    <p>조사분석인력(애널리스트)으로 등록하기 위한 자격으로, 기업 가치 평가와 정교한 재무 분석 능력을 검증합니다.</p>
+                </div>
+
+                <div class="exam-info-card" style="background: var(--success);">
+                    <h4>공인중개사 (CREA)</h4>
+                    <p>부동산 거래의 전문가로서 민법, 공법 등 복잡한 법률 지식과 부동산학개론을 마스터해야 하는 국가 전문 자격입니다.</p>
+                </div>
+            </section>
+
+            <section>
+                <h2>🙋 자주 묻는 질문 (FAQ)</h2>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                        <strong>Q: 서비스가 정말 무료인가요?</strong>
+                        <p>A: 네, 합격 패스의 모든 기출 문제와 학습 기능은 별도의 결제나 가입 없이 무료로 제공됩니다.</p>
+                    </div>
+                    <div>
+                        <strong>Q: 데이터가 사라질까 봐 걱정돼요.</strong>
+                        <p>A: 학습 데이터는 브라우저의 LocalStorage에 저장됩니다. 브라우저 캐시를 삭제하지 않는 한 안전하게 유지되며, 향후 계정 연동 기능을 통해 클라우드 백업도 지원할 예정입니다.</p>
+                    </div>
+                </div>
             </section>
         </main>
 
-        <footer>
-            <div class="footer-links">
-                <a href="about.html">서비스 소개</a>
-                <a href="privacy.html">개인정보처리방침</a>
-                <a href="solved.html">맞춘 문제</a>
-                <a href="review.html">오답 노트</a>
-                <a href="bookmarks.html">즐겨찾기</a>
-                <a href="stats.html">학습 통계</a>
-                <a href="contact.html">문의하기</a>
-            </div>
+        <footer style="margin-top: 4rem; text-align: center; font-size: 0.8rem; color: var(--secondary);">
             <p>&copy; 2026 합격 패스. All rights reserved.</p>
         </footer>
     </div>

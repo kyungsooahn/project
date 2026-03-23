@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pass.example.com/sitemap.xml
