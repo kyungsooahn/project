@@ -28,29 +28,40 @@ ${userQuery}
 답변은 간결하면서도 핵심 내용을 포함해야 하며, 학습자에게 도움이 되는 말투로 작성해 주세요. 한국어로 답변해 주세요.
     `;
 
-    try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    const tryGenerate = async (modelName) => {
+        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: prompt }]
-                }]
+                contents: [{ parts: [{ text: prompt }] }]
             })
         });
+        return response;
+    };
+
+    try {
+        let response = await tryGenerate('gemini-1.5-flash');
+
+        // 만약 gemini-1.5-flash가 안 되면 gemini-pro로 시도
+        if (!response.ok) {
+            console.warn('gemini-1.5-flash failed, trying gemini-pro...');
+            response = await tryGenerate('gemini-pro');
+        }
 
         if (!response.ok) {
             const errorData = await response.json();
             console.error('Gemini API Error:', errorData);
-            return res.status(500).json({ error: 'Failed to call AI service' });
+            return res.status(500).json({ error: 'Failed to call AI service after retries' });
         }
 
         const data = await response.json();
+        if (!data.candidates || !data.candidates[0].content) {
+             return res.status(500).json({ error: 'Invalid response from AI' });
+        }
         const reply = data.candidates[0].content.parts[0].text;
-
         return res.status(200).json({ reply });
+
     } catch (error) {
         console.error('Internal Error:', error);
         return res.status(500).json({ error: 'Internal server error' });
