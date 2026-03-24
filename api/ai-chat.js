@@ -27,13 +27,14 @@ export default async function handler(req, res) {
 사용자 질문: ${userQuery}
     `;
 
-    // 시도할 모델 조합 확장
+    // 시도할 모델 조합 확장 (최신 Gemini 3.x 모델 우선 적용)
     const attempts = [
-        { ver: 'v1beta', model: 'gemini-1.5-flash-latest' },
-        { ver: 'v1beta', model: 'gemini-1.5-flash' },
-        { ver: 'v1beta', model: 'gemini-1.5-pro-latest' },
-        { ver: 'v1', model: 'gemini-1.5-flash' },
-        { ver: 'v1', model: 'gemini-pro' }
+        { ver: 'v1beta', model: 'gemini-3.1-pro-preview' },
+        { ver: 'v1beta', model: 'gemini-3.1-flash-lite-preview' },
+        { ver: 'v1beta', model: 'gemini-3-pro-preview' },
+        { ver: 'v1beta', model: 'gemini-3-flash-preview' },
+        { ver: 'v1beta', model: 'gemini-2.5-flash' },
+        { ver: 'v1beta', model: 'gemini-2.0-flash' }
     ];
 
     for (const attempt of attempts) {
