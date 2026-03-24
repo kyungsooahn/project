@@ -28,42 +28,45 @@ ${userQuery}
 답변은 간결하면서도 핵심 내용을 포함해야 하며, 학습자에게 도움이 되는 말투로 작성해 주세요. 한국어로 답변해 주세요.
     `;
 
-    const tryGenerate = async (modelName) => {
-        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
-        });
-        return response;
-    };
+    // 시도할 모델과 API 버전 조합들 (가장 호환성이 높은 순서)
+    const attempts = [
+        { ver: 'v1beta', model: 'gemini-1.5-flash' },
+        { ver: 'v1', model: 'gemini-1.5-flash' },
+        { ver: 'v1beta', model: 'gemini-pro' },
+        { ver: 'v1', model: 'gemini-pro' }
+    ];
 
-    try {
-        let response = await tryGenerate('gemini-1.5-flash');
+    for (const attempt of attempts) {
+        try {
+            console.log(`Trying Gemini API ${attempt.ver} with model ${attempt.model}...`);
+            const url = `https://generativelanguage.googleapis.com/${attempt.ver}/models/${attempt.model}:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }]
+                })
+            });
 
-        // 만약 gemini-1.5-flash가 안 되면 gemini-pro로 시도
-        if (!response.ok) {
-            console.warn('gemini-1.5-flash failed, trying gemini-pro...');
-            response = await tryGenerate('gemini-pro');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content) {
+                    const reply = data.candidates[0].content.parts[0].text;
+                    console.log(`Success with ${attempt.model} (${attempt.ver})`);
+                    return res.status(200).json({ reply });
+                }
+            } else {
+                const errorData = await response.json();
+                console.warn(`Attempt with ${attempt.model} (${attempt.ver}) failed:`, errorData.error?.message || response.statusText);
+            }
+        } catch (error) {
+            console.error(`Error during attempt with ${attempt.model}:`, error);
         }
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Gemini API Error:', errorData);
-            return res.status(500).json({ error: 'Failed to call AI service after retries' });
-        }
-
-        const data = await response.json();
-        if (!data.candidates || !data.candidates[0].content) {
-             return res.status(500).json({ error: 'Invalid response from AI' });
-        }
-        const reply = data.candidates[0].content.parts[0].text;
-        return res.status(200).json({ reply });
-
-    } catch (error) {
-        console.error('Internal Error:', error);
-        return res.status(500).json({ error: 'Internal server error' });
     }
+
+    return res.status(500).json({ error: '모든 AI 모델 호출에 실패했습니다. Vercel의 Environment Variables에서 GEMINI_API_KEY가 정확한지 확인해 주세요.' });
 }
