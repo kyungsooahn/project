@@ -1,6 +1,5 @@
 // Vercel Serverless Function for AI Chat (Gemini)
 export default async function handler(req, res) {
-    // 테스트용 GET 요청 허용
     if (req.method === 'GET') {
         return res.status(200).send("AI Chat API is Live! Please use POST method to chat.");
     }
@@ -10,50 +9,41 @@ export default async function handler(req, res) {
     }
 
     const { question, options, answer, explanation, userQuery } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY;
+    let apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
         return res.status(500).json({ error: 'API key not configured on server' });
     }
+    
+    // API 키 공백 제거
+    apiKey = apiKey.trim();
 
     const prompt = `
-당신은 공인중개사 시험 및 각종 자격증 시험을 돕는 유능한 학습 튜터입니다.
-다음 문제와 해설을 바탕으로 사용자의 질문에 친절하고 전문적으로 답변해 주세요.
-
-[문제 정보]
+당신은 시험 학습 튜터입니다. 문제와 해설을 바탕으로 질문에 답하세요.
 문제: ${question}
-보기:
-${options.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}
+보기: ${options.join(', ')}
 정답: ${answer}
-기본 해설: ${explanation}
-
-[사용자 질문]
-${userQuery}
-
-답변은 간결하면서도 핵심 내용을 포함해야 하며, 학습자에게 도움이 되는 말투로 작성해 주세요. 한국어로 답변해 주세요.
+해설: ${explanation}
+사용자 질문: ${userQuery}
     `;
 
-    // 시도할 모델과 API 버전 조합들 (가장 호환성이 높은 순서)
+    // 시도할 모델 조합 확장
     const attempts = [
+        { ver: 'v1beta', model: 'gemini-1.5-flash-latest' },
         { ver: 'v1beta', model: 'gemini-1.5-flash' },
+        { ver: 'v1beta', model: 'gemini-1.5-pro-latest' },
         { ver: 'v1', model: 'gemini-1.5-flash' },
-        { ver: 'v1beta', model: 'gemini-pro' },
         { ver: 'v1', model: 'gemini-pro' }
     ];
 
     for (const attempt of attempts) {
         try {
-            console.log(`Trying Gemini API ${attempt.ver} with model ${attempt.model}...`);
             const url = `https://generativelanguage.googleapis.com/${attempt.ver}/models/${attempt.model}:generateContent?key=${apiKey}`;
             const response = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }]
+                    contents: [{ parts: [{ text: prompt }] }]
                 })
             });
 
@@ -66,12 +56,21 @@ ${userQuery}
                 }
             } else {
                 const errorData = await response.json();
-                console.warn(`Attempt with ${attempt.model} (${attempt.ver}) failed:`, errorData.error?.message || response.statusText);
+                console.warn(`Failed ${attempt.model} (${attempt.ver}):`, errorData.error?.message);
             }
         } catch (error) {
-            console.error(`Error during attempt with ${attempt.model}:`, error);
+            console.error(`Error with ${attempt.model}:`, error);
         }
     }
 
-    return res.status(500).json({ error: '모든 AI 모델 호출에 실패했습니다. Vercel의 Environment Variables에서 GEMINI_API_KEY가 정확한지 확인해 주세요.' });
+    // 모든 시도 실패 시 가용한 모델 목록을 로그에 찍어 원인 파악 (진단용)
+    try {
+        const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        if (listRes.ok) {
+            const listData = await listRes.json();
+            console.log("Available models for this key:", listData.models?.map(m => m.name).join(', '));
+        }
+    } catch (e) {}
+
+    return res.status(500).json({ error: 'AI 모델 호출에 모두 실패했습니다. 로그를 확인해 주세요.' });
 }
