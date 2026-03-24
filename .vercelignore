@@ -1,0 +1,9 @@
+.idx/
+.github/
+.vscode/
+data/existing_questions.txt
+existing_questions.txt
+gen_questions.js
+update_crea1.js
+update_crea1_v2.js
+README.md
