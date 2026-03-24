@@ -1,5 +1,10 @@
 // Vercel Serverless Function for AI Chat (Gemini)
 export default async function handler(req, res) {
+    // 테스트용 GET 요청 허용
+    if (req.method === 'GET') {
+        return res.status(200).send("AI Chat API is Live! Please use POST method to chat.");
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
