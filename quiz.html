@@ -226,6 +226,9 @@
         function handleKeyPress(e) {
             if (document.getElementById('result-container').style.display === 'block') return;
             
+            // Ignore if typing in an input or textarea
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
             if (!answered) {
                 if (e.key >= '1' && e.key <= '4') {
                     checkAnswer(parseInt(e.key) - 1);
