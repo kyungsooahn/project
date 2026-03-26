@@ -319,6 +319,7 @@
 
             try {
                 // 1. URL of a Korean .ttf font (Noto Sans KR Regular) from CDN
+                // This font is large and takes time to load. Consider pre-embedding for production.
                 const fontUrl = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@master/hinted/ttf/NotoSansKR/NotoSansKR-Regular.ttf';
                 const response = await fetch(fontUrl);
                 if (!response.ok) throw new Error(`Failed to fetch font: ${response.statusText}`);
