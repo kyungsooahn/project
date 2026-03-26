@@ -453,6 +453,7 @@
     // --- Functions moved from index.html ---
     window.WRONG_KEY = 'wrong_questions';
     window.PROGRESS_KEY = 'progress_data';
+    let globalTotalQ = 0;
 
     window.getStats = function() {
         try {
@@ -576,17 +577,17 @@
         }
     });
 
-    window.addEventListener('DOMContentLoaded', () => {
-        console.log("main.js: DOMContentLoaded fired. Checking if exams can be rendered early (for debug).");
-        if (Object.keys(window.examData).length > 0) {
-            console.log("main.js: window.examData has data on DOMContentLoaded. Rendering early.");
-            window.renderExams();
-            window.checkReviews();
-            window.updateStreakUI();
-        } else {
-            console.log("main.js: window.examData is empty on DOMContentLoaded. Waiting for dataLoaded events.");
-        }
-    });
+    // window.addEventListener('DOMContentLoaded', () => {
+    //     console.log("main.js: DOMContentLoaded fired. Checking if exams can be rendered early (for debug).");
+    //     if (Object.keys(window.examData).length > 0) {
+    //         console.log("main.js: window.examData has data on DOMContentLoaded. Rendering early.");
+    //         window.renderExams();
+    //         window.checkReviews();
+    //         window.updateStreakUI();
+    //     } else {
+    //         console.log("main.js: window.examData is empty on DOMContentLoaded. Waiting for dataLoaded events.");
+    //     }
+    // });
 
     window.addEventListener('load', window.updateAuthUI);
 })();
