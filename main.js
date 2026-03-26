@@ -1,4 +1,6 @@
 (function() {
+    console.log("main.js: Script started.");
+
     // 1. 테마 초기화
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
@@ -32,8 +34,7 @@
                             <input type="email" id="auth-email" placeholder="example@email.com" required>
                         </div>
                         <div class="auth-input-group">
-                            <label for="auth-password">비밀번호</label>
-                            <input type="password" id="auth-password" placeholder="••••••••" required>
+                            <label for="auth-password">비밀번호</                            <input type="password" id="auth-password" placeholder="••••••••" required>
                         </div>
                         <button type="submit" id="auth-submit-btn" class="auth-submit-btn">로그인</button>
                     </form>
@@ -59,11 +60,15 @@
         if (!window.examData) return;
         for (let examKey in window.examData) {
             const exam = window.examData[examKey];
-            exam.sections.forEach(section => {
-                section.questions.forEach((q, idx) => {
-                    if (q.id === undefined) q.id = idx + 1;
+            if (exam && exam.sections) { // Add null check for exam and sections
+                exam.sections.forEach(section => {
+                    if (section && section.questions) { // Add null check for section and questions
+                        section.questions.forEach((q, idx) => {
+                            if (q.id === undefined) q.id = idx + 1;
+                        });
+                    }
                 });
-            });
+            }
         }
     };
 
@@ -176,7 +181,9 @@
     };
 
     window.updateAuthUI = async function() {
+        console.log("main.js: updateAuthUI called. Before initializeData. window.examData keys:", Object.keys(window.examData));
         window.initializeData();
+        console.log("main.js: After initializeData. window.examData keys:", Object.keys(window.examData));
         const user = await window.checkUser();
         const authContainer = document.getElementById('auth-container');
         if (!authContainer) return;
@@ -188,6 +195,7 @@
             `;
             await window.loadSupabaseDataToLocal(user.id);
             await window.syncLocalDataToSupabase(user.id);
+            console.log("main.js: updateAuthUI dispatching dataLoaded event.");
             window.dispatchEvent(new Event('dataLoaded'));
         } else {
             authContainer.innerHTML = `
@@ -441,6 +449,144 @@
         utterance.pitch = 1.0;
         window.speechSynthesis.speak(utterance);
     };
+
+    // --- Functions moved from index.html ---
+    window.WRONG_KEY = 'wrong_questions';
+    window.PROGRESS_KEY = 'progress_data';
+
+    window.getStats = function() {
+        try {
+            const wrongs = JSON.parse(localStorage.getItem(window.WRONG_KEY) || '[]');
+            const progress = JSON.parse(localStorage.getItem(window.PROGRESS_KEY) || '{}');
+            return { wrongs, progress };
+        } catch (e) { return { wrongs: [], progress: {} }; }
+    };
+
+    window.renderExams = function() {
+        console.log("main.js: renderExams called. window.examData keys:", Object.keys(window.examData));
+        const financeGrid = document.getElementById('finance-grid');
+        const propertyGrid = document.getElementById('property-grid');
+        // const statsText = document.getElementById('total-stats'); // Removed as per index.html commented out line
+        if (!financeGrid || !propertyGrid) return;
+
+        const { wrongs, progress } = window.getStats();
+        financeGrid.innerHTML = ''; propertyGrid.innerHTML = '';
+        const categories = { finance: ['cim', 'fia'], property: ['crea1', 'crea2'] };
+
+        let globalTotalQ = 0;
+
+        for (let key in window.examData) {
+            const exam = window.examData[key];
+            console.log("main.js: renderExams processing exam:", key, "Exam data:", exam);
+            if (!exam || !exam.title || !exam.sections) {
+                console.warn(`main.js: Skipping rendering for exam key ${key} due to missing or invalid data.`, exam);
+                continue;
+            }
+            const grid = categories.finance.includes(key) ? financeGrid : propertyGrid;
+            const card = document.createElement('div');
+            card.className = 'exam-card';
+
+            let sectionsHtml = exam.sections.map(s => {
+                const sectionWrongCount = wrongs.filter(w => w.examKey === key && w.sectionId === s.id).length;
+                const sectionCorrectCount = progress[`${key}_${s.id}`] || 0;
+                const totalQ = s.questions ? s.questions.length : 0;
+                globalTotalQ += totalQ;
+                
+                const percent = totalQ > 0 ? Math.round((sectionCorrectCount / totalQ) * 100) : 0;
+                
+                const attempted = sectionCorrectCount + sectionWrongCount;
+                const accuracy = attempted > 0 ? Math.round((sectionCorrectCount / attempted) * 100) : 0;
+
+                return `
+                    <a href="quiz.html?exam=${key}&section=${s.id}" class="section-item" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <span style="font-weight: 500;">${s.name}</span>
+                            <div class="stats-badge" style="flex-wrap: wrap; justify-content: flex-end;">
+                                ${sectionWrongCount > 0 ? `<span class="badge badge-wrong">오답 ${sectionWrongCount}</span>` : ''}
+                                ${attempted > 0 ? `<span class="badge" style="background:var(--primary); opacity:0.9;">정답 ${accuracy}%</span>` : ''}
+                                <span class="badge badge-progress">${percent}%</span>
+                                <span class="badge badge-q">${totalQ}</span>
+                            </div>
+                        </div>
+                        <div class="progress-mini"><div class="progress-mini-fill" style="width: ${percent}%"></div></div>
+                    </a>
+                `;
+            }).join('');
+
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <h3 style="margin: 0;">${exam.title}</h3>
+                    <a href="mock.html?exam=${key}" class="mock-btn-main" style="background: var(--primary); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; font-weight: bold;">⏱️ 실전 모의고사</a>
+                </div>
+                <div class="section-list">${sectionsHtml}</div>
+            `;
+            grid.appendChild(card);
+        }
+        // if (statsText) statsText.innerText = `현재 총 ${globalTotalQ.toLocaleString()}개의 문제가 준비되어 있습니다.`;
+    };
+
+    window.checkReviews = function() {
+        const wrongs = JSON.parse(localStorage.getItem(window.WRONG_KEY) || '[]');
+        const now = new Date();
+        const dueReviews = wrongs.filter(w => w.nextReviewDate && new Date(w.nextReviewDate) <= now);
+        
+        const container = document.getElementById('review-alert-container');
+        const countText = document.getElementById('review-count-text');
+        
+        if (dueReviews.length > 0) {
+            container.style.display = 'block';
+            countText.innerText = `에빙하우스 망각 곡선에 따른 복습 주기가 돌아온 문제가 ${dueReviews.length}개 있습니다.`;
+        } else {
+            container.style.display = 'none';
+        }
+    };
+
+    window.updateStreakUI = function() {
+        const streak = window.getStreak ? window.getStreak() : 0;
+        const badge = document.getElementById('streak-badge');
+        const count = document.getElementById('streak-count');
+        if (streak > 0 && badge && count) {
+            badge.style.display = 'flex';
+            count.innerText = streak;
+        }
+    };
+
+    window.examData = {}; // Explicitly initialize window.examData here to ensure it exists
+    let expectedDataFiles = 4; // cim, fia, crea1, crea2
+    let dataFilesLoaded = 0;
+    console.log("main.js: Initializing data loading checks.");
+
+
+    window.addEventListener('dataLoaded', (e) => {
+        dataFilesLoaded++;
+        console.log(`main.js: dataLoaded event received for ${e.detail.examKey}. Success: ${e.detail.success}. Total loaded: ${dataFilesLoaded}/${expectedDataFiles}`);
+        if (e.detail && e.detail.success === false) {
+            console.warn(`main.js: Failed to load data for ${e.detail.examKey}:`, e.detail.error);
+            // Even on failure, we let the counter increment to ensure renderExams eventually runs.
+            // The robust check inside renderExams will handle missing data.
+        } else if (e.detail && e.detail.success === true) {
+            console.log(`main.js: Successfully loaded data for ${e.detail.examKey}`);
+        }
+
+        if (dataFilesLoaded === expectedDataFiles) {
+            console.log("main.js: All expected data files reported. Calling renderExams. Current window.examData state:", window.examData);
+            window.renderExams();
+            window.checkReviews();
+            window.updateStreakUI();
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        console.log("main.js: DOMContentLoaded fired. Checking if exams can be rendered early (for debug).");
+        if (Object.keys(window.examData).length > 0) {
+            console.log("main.js: window.examData has data on DOMContentLoaded. Rendering early.");
+            window.renderExams();
+            window.checkReviews();
+            window.updateStreakUI();
+        } else {
+            console.log("main.js: window.examData is empty on DOMContentLoaded. Waiting for dataLoaded events.");
+        }
+    });
 
     window.addEventListener('load', window.updateAuthUI);
 })();
