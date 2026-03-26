@@ -286,8 +286,49 @@
         }
 
         async function downloadPDF() {
-            alert('PDF 생성 기능은 리스트 모드에서만 지원됩니다.');
-            // (기존 PDF 로직 유지 가능하지만 생략)
+            if (isReviewMode) {
+                alert('PDF 생성 기능은 리스트 모드에서만 지원됩니다.');
+                return;
+            }
+
+            const element = document.getElementById('wrong-list-container');
+            if (!element) {
+                alert('PDF로 변환할 내용이 없습니다.');
+                return;
+            }
+
+            const doc = new jspdf.jsPDF();
+            const originalWidth = element.offsetWidth;
+            const originalHeight = element.offsetHeight;
+            
+            // PDF 페이지 크기 설정 (A4)
+            const pdfWidth = doc.internal.pageSize.getWidth();
+            const pdfHeight = doc.internal.pageSize.getHeight();
+
+            // 비율 유지하면서 스케일 조정
+            const scale = pdfWidth / originalWidth;
+            let currentHeight = 0;
+
+            // html2canvas로 렌더링
+            const canvas = await html2canvas(element, { scale: 2 }); // 더 높은 해상도로 렌더링
+            const imgData = canvas.toDataURL('image/png');
+            const imgHeight = canvas.height * pdfWidth / canvas.width;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            doc.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+            heightLeft -= pdfHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                doc.addPage();
+                doc.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                heightLeft -= pdfHeight;
+            }
+            
+            doc.save('오답노트.pdf');
+            alert('PDF 생성이 완료되었습니다.');
         }
     </script>
 </body>

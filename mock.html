@@ -173,9 +173,18 @@
         if (examKey) {
             const dataScript = document.createElement('script');
             dataScript.src = `data/${examKey}.js`;
-            dataScript.onload = () => init();
             dataScript.onerror = () => { alert('데이터 로드 실패'); location.href='index.html'; };
             document.head.appendChild(dataScript);
+
+            // Listen for the custom dataLoaded event
+            window.addEventListener('dataLoaded', (e) => {
+                if (e.detail && e.detail.examKey === examKey && e.detail.success) {
+                    init();
+                } else if (e.detail && e.detail.examKey === examKey && !e.detail.success) {
+                    alert('데이터 로드 실패: ' + e.detail.error.message);
+                    location.href = 'index.html';
+                }
+            });
         }
 
         function shuffle(array) {
