@@ -299,91 +299,127 @@
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
-            // IMPORTANT: For Korean font support, a custom font MUST be embedded.
-            // This requires converting a .ttf font file (e.g., Noto Sans KR) to a jsPDF font file
-            // and then adding it using doc.addFont().
-            // Without proper font embedding, Korean characters will appear broken or as empty boxes.
-            // For demonstration, we'll use a generic font. You need to replace this with a properly embedded Korean font.
-            doc.setFont('Times', 'normal'); // Using a common font as a fallback. Not ideal for Korean.
 
-            const pageWidth = doc.internal.pageSize.getWidth(); // A4 width in mm (210)
-            const pageHeight = doc.internal.pageSize.getHeight(); // A4 height in mm (297)
-            const margin = 10; // mm
-            const columnSpacing = 5; // mm between columns
-            const rowSpacing = 8; // mm between rows
-            const innerPadding = 2; // mm padding inside each question box
-
-            const availableWidth = pageWidth - (2 * margin);
-            const questionBoxWidth = (availableWidth - columnSpacing) / 2;
-            const questionBoxHeight = (pageHeight - (2 * margin) - (2 * rowSpacing)) / 3;
-
-            let currentQuestionIndex = 0;
-
-            while (currentQuestionIndex < wrongQuestions.length) {
-                if (currentQuestionIndex > 0) {
-                    doc.addPage();
+            // Helper function to convert ArrayBuffer to Base64
+            function arrayBufferToBase64(buffer) {
+                let binary = '';
+                const bytes = new Uint8Array(buffer);
+                const len = bytes.byteLength;
+                for (let i = 0; i < len; i++) {
+                    binary += String.fromCharCode(bytes[i]);
                 }
-
-                for (let row = 0; row < 3; row++) {
-                    for (let col = 0; col < 2; col++) {
-                        if (currentQuestionIndex >= wrongQuestions.length) {
-                            break; // No more questions
-                        }
-
-                        const q = wrongQuestions[currentQuestionIndex];
-
-                        // Calculate position for the current question box
-                        let boxX = margin + (col * (questionBoxWidth + columnSpacing));
-                        let boxY = margin + (row * (questionBoxHeight + rowSpacing));
-                        
-                        // Draw a box for each question for better visual separation
-                        doc.setDrawColor(200, 200, 200); // Light gray border
-                        doc.rect(boxX, boxY, questionBoxWidth, questionBoxHeight);
-
-                        let contentY = boxY + innerPadding; // Y position for content inside the question box
-
-                        // Question Number and Title
-                        doc.setFontSize(9);
-                        doc.setFont(undefined, 'bold');
-                        let questionText = `Q${currentQuestionIndex + 1}. ${q.q}`;
-                        let splitQuestionText = doc.splitTextToSize(questionText, questionBoxWidth - (2 * innerPadding));
-                        doc.text(splitQuestionText, boxX + innerPadding, contentY);
-                        contentY += (splitQuestionText.length * 3.5) + 2; // Adjust Y for multiline text + small padding
-
-                        // Options
-                        doc.setFontSize(7);
-                        doc.setFont(undefined, 'normal');
-                        q.options.forEach((opt, idx) => {
-                            let optionText = `${idx + 1}. ${opt}`;
-                            let splitOptionText = doc.splitTextToSize(optionText, questionBoxWidth - (2 * innerPadding));
-                            doc.text(splitOptionText, boxX + innerPadding + 1, contentY); // Indent options slightly
-                            contentY += (splitOptionText.length * 3) + 1;
-                        });
-
-                        // Answer
-                        doc.setFontSize(7);
-                        doc.setFont(undefined, 'bold');
-                        doc.setTextColor(34, 197, 94); // Green for correct answer
-                        let answerText = `정답: ${q.options[q.answer]}`;
-                        let splitAnswerText = doc.splitTextToSize(answerText, questionBoxWidth - (2 * innerPadding));
-                        doc.text(splitAnswerText, boxX + innerPadding, contentY);
-                        contentY += (splitAnswerText.length * 3) + 2;
-
-                        // Explanation
-                        doc.setTextColor(0, 0, 0); // Reset color to black
-                        doc.setFont(undefined, 'normal');
-                        let explanationHeader = '해설: ';
-                        let splitExplanation = doc.splitTextToSize(explanationHeader + q.exp, questionBoxWidth - (2 * innerPadding));
-                        doc.text(splitExplanation, boxX + innerPadding, contentY);
-                        // contentY += (splitExplanation.length * 3); // Not strictly needed for final Y for this question
-
-                        currentQuestionIndex++;
-                    }
-                }
+                return window.btoa(binary);
             }
 
-            doc.save('오답노트.pdf');
-            alert('PDF 생성이 완료되었습니다.');
+            // Show loading message
+            const originalAlert = window.alert;
+            window.alert = (message) => console.log(message); // Suppress alerts for now
+            originalAlert('PDF 생성을 위해 한글 폰트를 로드 중입니다. 잠시만 기다려 주세요...');
+            window.alert = originalAlert; // Restore alert
+
+            try {
+                // 1. URL of a Korean .ttf font (Noto Sans KR Regular) from CDN
+                const fontUrl = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@master/hinted/ttf/NotoSansKR/NotoSansKR-Regular.ttf';
+                const response = await fetch(fontUrl);
+                if (!response.ok) throw new Error(`Failed to fetch font: ${response.statusText}`);
+                const arrayBuffer = await response.arrayBuffer();
+                
+                // 2. Convert ArrayBuffer to Base64
+                const base64Font = arrayBufferToBase64(arrayBuffer);
+
+                // 3. Add the font to jsPDF Virtual File System (VFS)
+                const fontName = 'NotoSansKR-Regular.ttf';
+                doc.addFileToVFS(fontName, base64Font);
+                
+                // 4. Register the font
+                doc.addFont(fontName, 'NotoSansKR', 'normal');
+
+                // 5. Use the font
+                doc.setFont('NotoSansKR', 'normal'); // Set font for Korean characters
+                doc.setFontSize(10); // Default font size
+
+                const pageWidth = doc.internal.pageSize.getWidth(); // A4 width in mm (210)
+                const pageHeight = doc.internal.pageSize.getHeight(); // A4 height in mm (297)
+                const margin = 10; // mm
+                const columnSpacing = 5; // mm between columns
+                const rowSpacing = 8; // mm between rows
+                const innerPadding = 2; // mm padding inside each question box
+
+                const availableWidth = pageWidth - (2 * margin);
+                const questionBoxWidth = (availableWidth - columnSpacing) / 2;
+                const questionBoxHeight = (pageHeight - (2 * margin) - (2 * rowSpacing)) / 3;
+
+                let currentQuestionIndex = 0;
+
+                while (currentQuestionIndex < wrongQuestions.length) {
+                    if (currentQuestionIndex > 0) {
+                        doc.addPage();
+                    }
+
+                    for (let row = 0; row < 3; row++) {
+                        for (let col = 0; col < 2; col++) {
+                            if (currentQuestionIndex >= wrongQuestions.length) {
+                                break; // No more questions
+                            }
+
+                            const q = wrongQuestions[currentQuestionIndex];
+
+                            // Calculate position for the current question box
+                            let boxX = margin + (col * (questionBoxWidth + columnSpacing));
+                            let boxY = margin + (row * (questionBoxHeight + rowSpacing));
+                            
+                            // Draw a box for each question for better visual separation
+                            doc.setDrawColor(200, 200, 200); // Light gray border
+                            doc.rect(boxX, boxY, questionBoxWidth, questionBoxHeight);
+
+                            let contentY = boxY + innerPadding; // Y position for content inside the question box
+
+                            // Question Number and Title
+                            doc.setFontSize(9);
+                            doc.setFont(undefined, 'bold');
+                            let questionText = `Q${currentQuestionIndex + 1}. ${q.q}`;
+                            let splitQuestionText = doc.splitTextToSize(questionText, questionBoxWidth - (2 * innerPadding));
+                            doc.text(splitQuestionText, boxX + innerPadding, contentY);
+                            contentY += (splitQuestionText.length * 3.5) + 2; // Adjust Y for multiline text + small padding
+
+                            // Options
+                            doc.setFontSize(7);
+                            doc.setFont(undefined, 'normal');
+                            q.options.forEach((opt, idx) => {
+                                let optionText = `${idx + 1}. ${opt}`;
+                                let splitOptionText = doc.splitTextToSize(optionText, questionBoxWidth - (2 * innerPadding));
+                                doc.text(splitOptionText, boxX + innerPadding + 1, contentY); // Indent options slightly
+                                contentY += (splitOptionText.length * 3) + 1;
+                            });
+
+                            // Answer
+                            doc.setFontSize(7);
+                            doc.setFont(undefined, 'bold');
+                            doc.setTextColor(34, 197, 94); // Green for correct answer
+                            let answerText = `정답: ${q.options[q.answer]}`;
+                            let splitAnswerText = doc.splitTextToSize(answerText, questionBoxWidth - (2 * innerPadding));
+                            doc.text(splitAnswerText, boxX + innerPadding, contentY);
+                            contentY += (splitAnswerText.length * 3) + 2;
+
+                            // Explanation
+                            doc.setTextColor(0, 0, 0); // Reset color to black
+                            doc.setFont(undefined, 'normal');
+                            let explanationHeader = '해설: ';
+                            let splitExplanation = doc.splitTextToSize(explanationHeader + q.exp, questionBoxWidth - (2 * innerPadding));
+                            doc.text(splitExplanation, boxX + innerPadding, contentY);
+                            // contentY += (splitExplanation.length * 3); // Not strictly needed for final Y for this question
+
+                            currentQuestionIndex++;
+                        }
+                    }
+                }
+
+                doc.save('오답노트.pdf');
+                originalAlert('PDF 생성이 완료되었습니다.');
+
+            } catch (error) {
+                console.error("Error loading font or generating PDF:", error);
+                originalAlert("PDF 생성 실패: 폰트 로드 중 오류가 발생했습니다. 콘솔을 확인해 주세요.");
+            }
         }
     </script>
