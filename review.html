@@ -300,43 +300,28 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            // Helper function to convert ArrayBuffer to Base64
-            function arrayBufferToBase64(buffer) {
-                let binary = '';
-                const bytes = new Uint8Array(buffer);
-                const len = bytes.byteLength;
-                for (let i = 0; i < len; i++) {
-                    binary += String.fromCharCode(bytes[i]);
-                }
-                return window.btoa(binary);
+            // *** 사용자 액션 필요: NotoSansKR-Regular.ttf 폰트의 Base64 문자열을 여기에 붙여넣으세요. ***
+            // (예: https://www.base64encode.org/ 와 같은 온라인 도구를 사용하여 .ttf 파일을 Base64로 변환)
+            // 변환된 폰트 파일의 용량이 크기 때문에, 이 문자열은 매우 길 수 있습니다.
+            // 아래 'YOUR_NOTOSANSKR_BASE64_STRING_HERE' 부분을 실제 Base64 문자열로 교체해야 합니다.
+            const NotoSansKR_Base64 = `YOUR_NOTOSANSKR_BASE64_STRING_HERE`; // <<< 사용자 교체 필요
+
+            if (NotoSansKR_Base64 === 'YOUR_NOTOSANSKR_BASE64_STRING_HERE') {
+                alert("PDF 생성 실패: 한글 폰트 Base64 문자열이 설정되지 않았습니다. 'review.html' 파일을 열어 'NotoSansKR_Base64' 변수에 'NotoSansKR-Regular.ttf' 폰트의 Base64 데이터를 붙여넣어 주세요.");
+                console.error("PDF 생성 실패: 한글 폰트 Base64 문자열이 설정되지 않았습니다.");
+                return;
             }
 
-            // Show loading message
             const originalAlert = window.alert;
             window.alert = (message) => console.log(message); // Suppress alerts for now
-            originalAlert('PDF 생성을 위해 한글 폰트를 로드 중입니다. 잠시만 기다려 주세요...');
+            originalAlert('PDF 생성 준비 중...');
             window.alert = originalAlert; // Restore alert
 
             try {
-                // 1. URL of a Korean .ttf font (Noto Sans KR Regular) from CDN
-                // This font is large and takes time to load. Consider pre-embedding for production.
-                const fontUrl = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@master/hinted/ttf/NotoSansKR/NotoSansKR-Regular.ttf';
-                const response = await fetch(fontUrl);
-                if (!response.ok) throw new Error(`Failed to fetch font: ${response.statusText}`);
-                const arrayBuffer = await response.arrayBuffer();
-                
-                // 2. Convert ArrayBuffer to Base64
-                const base64Font = arrayBufferToBase64(arrayBuffer);
-
-                // 3. Add the font to jsPDF Virtual File System (VFS)
                 const fontName = 'NotoSansKR-Regular.ttf';
-                doc.addFileToVFS(fontName, base64Font);
-                
-                // 4. Register the font
+                doc.addFileToVFS(fontName, NotoSansKR_Base64);
                 doc.addFont(fontName, 'NotoSansKR', 'normal');
-
-                // 5. Use the font
-                doc.setFont('NotoSansKR', 'normal'); // Set font for Korean characters
+                doc.setFont('NotoSansKR', 'normal');
                 doc.setFontSize(10); // Default font size
 
                 const pageWidth = doc.internal.pageSize.getWidth(); // A4 width in mm (210)
@@ -416,11 +401,11 @@
                 }
 
                 doc.save('오답노트.pdf');
-                originalAlert('PDF 생성이 완료되었습니다.');
+                alert('PDF 생성이 완료되었습니다.');
 
             } catch (error) {
-                console.error("Error loading font or generating PDF:", error);
-                originalAlert("PDF 생성 실패: 폰트 로드 중 오류가 발생했습니다. 콘솔을 확인해 주세요.");
+                console.error("PDF 생성 실패:", error);
+                alert(`PDF 생성 실패: ${error.message}. 콘솔을 확인해 주세요.`);
             }
         }
     </script>
