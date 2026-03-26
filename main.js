@@ -473,9 +473,9 @@
         financeGrid.innerHTML = ''; propertyGrid.innerHTML = '';
         const categories = { finance: ['cim', 'fia'], property: ['crea1', 'crea2'] };
 
-        let globalTotalQ = 0;
-
-        for (let key in window.examData) {
+        // Ensure consistent order by sorting keys
+        const sortedExamKeys = Object.keys(window.examData).sort();
+        for (const key of sortedExamKeys) {
             const exam = window.examData[key];
             console.log("main.js: renderExams processing exam:", key, "Exam data:", exam);
             if (!exam || !exam.title || !exam.sections) {
