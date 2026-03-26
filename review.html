@@ -300,13 +300,12 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // For Korean font support, a custom font needs to be embedded.
-            // This is a placeholder. If Korean characters appear broken,
-            // you'll need to load a font like Noto Sans KR.
-            // Example: doc.addFont("path/to/NotoSansKR-Regular.ttf", "NotoSansKR", "normal");
-            // doc.setFont("NotoSansKR", "normal");
-            // For now, we'll try with a generic font name.
-            doc.setFont('Helvetica', 'normal'); // Fallback or assume system font support for Korean
+            // IMPORTANT: For Korean font support, a custom font MUST be embedded.
+            // This requires converting a .ttf font file (e.g., Noto Sans KR) to a jsPDF font file
+            // and then adding it using doc.addFont().
+            // Without proper font embedding, Korean characters will appear broken or as empty boxes.
+            // For demonstration, we'll use a generic font. You need to replace this with a properly embedded Korean font.
+            doc.setFont('Times', 'normal'); // Using a common font as a fallback. Not ideal for Korean.
 
             const pageWidth = doc.internal.pageSize.getWidth(); // A4 width in mm (210)
             const pageHeight = doc.internal.pageSize.getHeight(); // A4 height in mm (297)
