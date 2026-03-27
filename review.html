@@ -20,6 +20,14 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
+    <script type="module">
+        import { NotoSansKR_Base64 } from './utils/font_data.js';
+        window.NotoSansKR_Base64 = NotoSansKR_Base64;
+        if (window.NotoSansKR_Base64 === 'YOUR_NOTOSANSKR_BASE64_STRING_HERE') {
+            console.warn("NotoSansKR_Base64 is still a placeholder. Please update utils/font_data.js.");
+        }
+    </script>
+
     <style>
         .filter-container { margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
         .filter-btn { padding: 0.4rem 0.85rem; border-radius: 2rem; border: 1px solid var(--primary); background: transparent; color: var(--primary); cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
@@ -300,13 +308,8 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            import { NotoSansKR_Base64 } from './utils/font_data.js';
+            // NotoSansKR_Base64 will be globally available via window.NotoSansKR_Base64 from the module script
 
-            if (NotoSansKR_Base64 === 'YOUR_NOTOSANSKR_BASE64_STRING_HERE') {
-                alert("PDF 생성 실패: 한글 폰트 Base64 문자열이 설정되지 않았습니다. 'utils/font_data.js' 파일을 열어 'NotoSansKR_Base64' 변수에 'NotoSansKR-Regular.ttf' 폰트의 Base64 데이터를 붙여넣어 주세요.");
-                console.error("PDF 생성 실패: 한글 폰트 Base64 문자열이 설정되지 않았습니다.");
-                return;
-            }
 
             const originalAlert = window.alert;
             window.alert = (message) => console.log(message); // Suppress alerts for now
@@ -314,6 +317,11 @@
             window.alert = originalAlert; // Restore alert
 
             try {
+                if (!window.NotoSansKR_Base64 || window.NotoSansKR_Base64 === 'YOUR_NOTOSANSKR_BASE64_STRING_HERE') {
+                    alert("PDF 생성 실패: 한글 폰트 Base64 문자열이 설정되지 않았습니다. 'utils/font_data.js' 파일을 열어 'NotoSansKR_Base64' 변수에 'NotoSansKR-Regular.ttf' 폰트의 Base64 데이터를 붙여넣어 주세요.");
+                    console.error("PDF 생성 실패: 한글 폰트 Base64 문자열이 설정되지 않았습니다.");
+                    return;
+                }
                 const fontName = 'NotoSansKR-Regular.ttf';
                 doc.addFileToVFS(fontName, NotoSansKR_Base64);
                 doc.addFont(fontName, 'NotoSansKR', 'normal');
