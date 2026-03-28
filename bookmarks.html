@@ -17,9 +17,7 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1480804086381400"
      crossorigin="anonymous"></script>
     
-    <!-- PDF Generation Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
 
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -83,19 +81,7 @@
             gap: 0.4rem;
         }
 
-        /* PDF Template Styles */
-        #pdf-template {
-            position: absolute;
-            left: -10000px;
-            top: 0;
-            width: 210mm;
-            padding: 15mm;
-            background: white;
-            color: #1a1a1a;
-        }
-        .pdf-page-title { font-size: 22pt; font-weight: 800; color: #4f46e5; text-align: center; border-bottom: 2pt solid #4f46e5; padding-bottom: 8pt; margin-bottom: 20pt; }
-        .pdf-columns { column-count: 2; column-gap: 10mm; }
-        .pdf-question-card { margin-bottom: 12pt; padding: 10pt; border: 0.5pt solid #ddd; border-radius: 6pt; break-inside: avoid; }
+
     </style>
 </head>
 <body>
@@ -105,7 +91,7 @@
                 <div style="display: flex; flex-direction: column;"><a href="index.html" class="lite-logo">LI<span>TE</span></a><div class="lite-tagline">License Is Talent</div></div>
                 <h1 style="margin: 0;">⭐ 즐겨찾기</h1>
             </div>
-            <button id="pdf-download-btn" class="download-btn" onclick="downloadPDF()">📄 PDF 다운로드</button>
+            
         </header>
 
         <div id="bookmark-list-container"></div>
@@ -122,7 +108,8 @@
         </footer>
     </div>
 
-    <div id="pdf-template"></div>
+
+
 
     <script>
         const BOOKMARK_KEY = 'bookmarked_questions';
@@ -149,11 +136,8 @@
                         <p>즐겨찾기한 문제가 없습니다.<br>학습 중에 중요한 문제를 별표로 표시해보세요.</p>
                     </div>
                 `;
-                document.getElementById('pdf-download-btn').style.display = 'none';
                 return;
             }
-
-            document.getElementById('pdf-download-btn').style.display = 'flex';
 
             let html = '';
             for (const title in groups) {
@@ -199,42 +183,6 @@
             bookmarks.splice(idx, 1);
             localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
             renderBookmarks();
-        }
-
-        async function downloadPDF() {
-            const btn = document.getElementById('pdf-download-btn');
-            const template = document.getElementById('pdf-template');
-            const groups = getGroupedBookmarks();
-            
-            try {
-                btn.innerText = '⏳ 생성 중...';
-                let pdfHtml = `<div class="pdf-page-title">즐겨찾기 요약 노트</div><div class="pdf-columns">`;
-                for (const title in groups) {
-                    pdfHtml += `<div style="column-span:all; font-weight:bold; font-size:14pt; margin-top:10pt; border-bottom:1pt solid #4f46e5;">${title}</div>`;
-                    groups[title].forEach((q, idx) => {
-                        const opts = q.options.map((o, i) => `<div style="font-size:9pt; ${i === q.answer ? 'color:#4f46e5; font-weight:bold;' : ''}">${i+1}. ${o}</div>`).join('');
-                        pdfHtml += `
-                            <div class="pdf-question-card">
-                                <div style="font-size:10pt; font-weight:bold; margin-bottom:5pt;">Q${idx+1}. ${q.q}</div>
-                                ${opts}
-                                <div style="font-size:8pt; margin-top:5pt; color:#666; font-style:italic;">해설: ${q.exp}</div>
-                            </div>
-                        `;
-                    });
-                }
-                pdfHtml += `</div>`;
-                template.innerHTML = pdfHtml;
-
-                const canvas = await html2canvas(template, { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 794 });
-                const imgData = canvas.toDataURL('image/png');
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
-                pdf.save(`합격패스_즐겨찾기_${new Date().toISOString().slice(0, 10)}.pdf`);
-            } catch (e) { alert('PDF 생성 실패'); }
-            finally { btn.innerText = '📄 PDF 다운로드'; template.innerHTML = ''; }
         }
 
         renderBookmarks();
