@@ -13,20 +13,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LITE - 오답 복습 및 노트 📝</title>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
-    <script type="module">
-        import { NotoSansKR_Base64 } from './utils/font_data.js';
-        window.NotoSansKR_Base64 = NotoSansKR_Base64;
-        if (window.NotoSansKR_Base64 === 'YOUR_NOTOSANSKR_BASE64_STRING_HERE') {
-            console.warn("NotoSansKR_Base64 is still a placeholder. Please update utils/font_data.js.");
-        }
-    </script>
+    
 
     <style>
         .filter-container { margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -57,7 +50,7 @@
                 <div class="lite-tagline">License Is Talent</div>
             </div>
             <div id="header-actions" style="display: flex; gap: 0.5rem; align-items: center;">
-                <button id="pdf-download-btn" class="download-btn" onclick="downloadPDF()">📄 PDF</button>
+                
             </div>
         </header>
 
@@ -291,125 +284,5 @@
             wrongs.splice(originalIdx, 1);
             localStorage.setItem(WRONG_KEY, JSON.stringify(wrongs));
             renderWrongQuestions();
-        }
-
-        window.downloadPDF = async function() {
-            if (isReviewMode) {
-                alert('PDF 생성 기능은 리스트 모드에서만 지원됩니다.');
-                return;
-            }
-
-            const wrongQuestions = JSON.parse(localStorage.getItem(WRONG_KEY) || '[]');
-            if (wrongQuestions.length === 0) {
-                alert('PDF로 변환할 오답 문제가 없습니다.');
-                return;
-            }
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            // NotoSansKR_Base64 will be globally available via window.NotoSansKR_Base64 from the module script
-
-
-            const originalAlert = window.alert;
-            window.alert = (message) => console.log(message); // Suppress alerts for now
-            originalAlert('PDF 생성 준비 중...');
-            window.alert = originalAlert; // Restore alert
-
-            try {
-                if (!window.NotoSansKR_Base64 || window.NotoSansKR_Base64 === 'YOUR_NOTOSANSKR_BASE64_STRING_HERE') {
-                    alert("PDF 생성 실패: 한글 폰트 Base64 문자열이 설정되지 않았습니다. 'utils/font_data.js' 파일을 열어 'NotoSansKR_Base64' 변수에 'NotoSansKR-Regular.ttf' 폰트의 Base64 데이터를 붙여넣어 주세요.");
-                    console.error("PDF 생성 실패: 한글 폰트 Base64 문자열이 설정되지 않았습니다.");
-                    return;
-                }
-                const fontName = 'NotoSansKR-Regular.ttf';
-                doc.addFileToVFS(fontName, NotoSansKR_Base64);
-                doc.addFont(fontName, 'Noto Sans KR Regular', 'normal');
-                doc.setFont('Noto Sans KR Regular', 'normal');
-                doc.setFontSize(10); // Default font size
-
-                const pageWidth = doc.internal.pageSize.getWidth(); // A4 width in mm (210)
-                const pageHeight = doc.internal.pageSize.getHeight(); // A4 height in mm (297)
-                const margin = 10; // mm
-                const columnSpacing = 5; // mm between columns
-                const rowSpacing = 8; // mm between rows
-                const innerPadding = 2; // mm padding inside each question box
-
-                const availableWidth = pageWidth - (2 * margin);
-                const questionBoxWidth = (availableWidth - columnSpacing) / 2;
-                const questionBoxHeight = (pageHeight - (2 * margin) - (2 * rowSpacing)) / 3;
-
-                let currentQuestionIndex = 0;
-
-                while (currentQuestionIndex < wrongQuestions.length) {
-                    if (currentQuestionIndex > 0) {
-                        doc.addPage();
-                    }
-
-                    for (let row = 0; row < 3; row++) {
-                        for (let col = 0; col < 2; col++) {
-                            if (currentQuestionIndex >= wrongQuestions.length) {
-                                break; // No more questions
-                            }
-
-                            const q = wrongQuestions[currentQuestionIndex];
-
-                            // Calculate position for the current question box
-                            let boxX = margin + (col * (questionBoxWidth + columnSpacing));
-                            let boxY = margin + (row * (questionBoxHeight + rowSpacing));
-                            
-                            // Draw a box for each question for better visual separation
-                            doc.setDrawColor(200, 200, 200); // Light gray border
-                            doc.rect(boxX, boxY, questionBoxWidth, questionBoxHeight);
-
-                            let contentY = boxY + innerPadding; // Y position for content inside the question box
-
-                            // Question Number and Title
-                            doc.setFontSize(9);
-                            doc.setFont(undefined, 'bold');
-                            let questionText = `Q${currentQuestionIndex + 1}. ${q.q}`;
-                            let splitQuestionText = doc.splitTextToSize(questionText, questionBoxWidth - (2 * innerPadding));
-                            doc.text(splitQuestionText, boxX + innerPadding, contentY);
-                            contentY += (splitQuestionText.length * 3.5) + 2; // Adjust Y for multiline text + small padding
-
-                            // Options
-                            doc.setFontSize(7);
-                            doc.setFont(undefined, 'normal');
-                            q.options.forEach((opt, idx) => {
-                                let optionText = `${idx + 1}. ${opt}`;
-                                let splitOptionText = doc.splitTextToSize(optionText, questionBoxWidth - (2 * innerPadding));
-                                doc.text(splitOptionText, boxX + innerPadding + 1, contentY); // Indent options slightly
-                                contentY += (splitOptionText.length * 3) + 1;
-                            });
-
-                            // Answer
-                            doc.setFontSize(7);
-                            doc.setFont(undefined, 'bold');
-                            doc.setTextColor(34, 197, 94); // Green for correct answer
-                            let answerText = `정답: ${q.options[q.answer]}`;
-                            let splitAnswerText = doc.splitTextToSize(answerText, questionBoxWidth - (2 * innerPadding));
-                            doc.text(splitAnswerText, boxX + innerPadding, contentY);
-                            contentY += (splitAnswerText.length * 3) + 2;
-
-                            // Explanation
-                            doc.setTextColor(0, 0, 0); // Reset color to black
-                            doc.setFont(undefined, 'normal');
-                            let explanationHeader = '해설: ';
-                            let splitExplanation = doc.splitTextToSize(explanationHeader + q.exp, questionBoxWidth - (2 * innerPadding));
-                            doc.text(splitExplanation, boxX + innerPadding, contentY);
-                            // contentY += (splitExplanation.length * 3); // Not strictly needed for final Y for this question
-
-                            currentQuestionIndex++;
-                        }
-                    }
-                }
-
-                doc.save('오답노트.pdf');
-                alert('PDF 생성이 완료되었습니다.');
-
-            } catch (error) {
-                console.error("PDF 생성 실패:", error);
-                alert(`PDF 생성 실패: ${error.message}. 콘솔을 확인해 주세요.`);
-            }
         }
     </script>
