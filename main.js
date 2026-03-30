@@ -181,9 +181,7 @@
     };
 
     window.updateAuthUI = async function() {
-        console.log("main.js: updateAuthUI called. Before initializeData. window.examData keys:", Object.keys(window.examData));
-        window.initializeData();
-        console.log("main.js: After initializeData. window.examData keys:", Object.keys(window.examData));
+        console.log("main.js: updateAuthUI called.");
         const user = await window.checkUser();
         const authContainer = document.getElementById('auth-container');
         if (!authContainer) return;
@@ -195,13 +193,17 @@
             `;
             await window.loadSupabaseDataToLocal(user.id);
             await window.syncLocalDataToSupabase(user.id);
-            console.log("main.js: updateAuthUI dispatching dataLoaded event.");
-            window.dispatchEvent(new Event('dataLoaded'));
+            await window.renderExams(); // Call renderExams after user data is loaded/synced, now await it
         } else {
             authContainer.innerHTML = `
                 <button onclick="openLoginModal()" class="theme-toggle" title="로그인">🔒</button>
             `;
+            await window.renderExams(); // Also render exams if no user is logged in, now await it
         }
+        window.initializeData(); // Initialize data after all exams are potentially loaded.
+        window.checkReviews();
+        window.updateStreakUI();
+        await window.renderContinueLearning(); // Call the new function
     };
 
     // 기존 window.login 유지 (호환성용)
@@ -298,6 +300,81 @@
         location.reload();
     };
 
+    // --- AI Chat Functions (Moved from quiz.html) ---
+    window.toggleAIChat = function() {
+        const chatBox = document.getElementById('ai-chat-box');
+        chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex';
+        if (chatBox.style.display === 'flex') {
+            document.getElementById('ai-input').focus();
+        }
+    };
+
+    window.sendMessage = async function(e, currentQuestion, currentQuestionIndex) {
+        e.preventDefault();
+        const input = document.getElementById('ai-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        window.addMessage(message, 'user');
+        input.value = '';
+
+        const loadingId = window.addMessage('생각 중...', 'ai loading');
+
+        try {
+            const response = await window.callAI(message, currentQuestion, currentQuestionIndex);
+            window.updateMessage(loadingId, response);
+        } catch (err) {
+            window.updateMessage(loadingId, '죄송합니다. 오류가 발생했습니다: ' + err.message);
+        }
+    };
+
+    window.addMessage = function(text, type) {
+        const container = document.getElementById('ai-messages');
+        const div = document.createElement('div');
+        const id = 'msg-' + Date.now();
+        div.id = id;
+        div.className = 'message ' + type;
+        div.innerText = text;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+        return id;
+    };
+
+    window.updateMessage = function(id, text) {
+        const div = document.getElementById(id);
+        if (div) {
+            div.innerText = text;
+            div.classList.remove('loading');
+            const container = document.getElementById('ai-messages');
+            container.scrollTop = container.scrollHeight;
+        }
+    };
+
+    window.callAI = async function(userMessage, currentQuestion, currentQuestionIndex) {
+        const q = currentQuestion; // Use the passed currentQuestion
+        const payload = {
+            question: q.q,
+            options: q.options,
+            answer: q.options[q.answer],
+            explanation: q.exp,
+            userQuery: userMessage,
+            history: [] // Can implement history later
+        };
+
+        const response = await fetch('/api/ai-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error('API 호출 실패');
+        }
+
+        const data = await response.json();
+        return data.reply;
+    };
+
     // --- 스트릭 관리 기능 ---
     window.updateStreak = function() {
         const STREAK_KEY = 'learning_streak';
@@ -386,17 +463,21 @@
         if (itemIdx > -1) {
             const item = wrongQuestions[itemIdx];
             if (isCorrect) {
-                // 맞히면 레벨업 (1일 -> 3일 -> 7일 -> 완료)
-                item.level = (item.level || 1) + 1;
-                let days = item.level === 2 ? 3 : (item.level === 3 ? 7 : 14);
+                item.level = (item.level || 1) + 1; // Level up
+                let daysToAdd;
+                switch (item.level) {
+                    case 2: daysToAdd = 2; break; // Was 3, now 2 days
+                    case 3: daysToAdd = 7; break;
+                    case 4: daysToAdd = 14; break;
+                    case 5: daysToAdd = 30; break; // New level
+                    default: daysToAdd = 0; // Should be removed or completed
+                }
                 
-                if (item.level > 3) {
-                    // 3단계 완료 시 오답 노트에서 제거 (선택 사항)
-                    // wrongQuestions.splice(itemIdx, 1); 
-                    item.nextReviewDate = null; // 복습 완료
+                if (item.level > 5) { // If level exceeds 5, consider it "mastered"
+                    wrongQuestions.splice(itemIdx, 1); // Remove from wrong questions
                 } else {
                     const nextDate = new Date();
-                    nextDate.setDate(nextDate.getDate() + days);
+                    nextDate.setDate(nextDate.getDate() + daysToAdd);
                     item.nextReviewDate = nextDate.toISOString();
                 }
             } else {
@@ -463,16 +544,28 @@
         } catch (e) { return { wrongs: [], progress: {} }; }
     };
 
-    window.renderExams = function() {
-        console.log("main.js: renderExams called. window.examData keys:", Object.keys(window.examData));
+    window.renderExams = async function() { // Made async
+        console.log("main.js: renderExams called.");
         const financeGrid = document.getElementById('finance-grid');
         const propertyGrid = document.getElementById('property-grid');
-        // const statsText = document.getElementById('total-stats'); // Removed as per index.html commented out line
         if (!financeGrid || !propertyGrid) return;
 
-        const { wrongs, progress } = window.getStats();
         financeGrid.innerHTML = ''; propertyGrid.innerHTML = '';
         const categories = { finance: ['cim', 'fia'], property: ['crea1', 'crea2'] };
+        const allExamKeys = [...categories.finance, ...categories.property];
+
+        const loadPromises = allExamKeys.map(async (examKey) => {
+            try {
+                await window.loadExamJsonData(examKey);
+            } catch (error) {
+                console.error(`Failed to load data for ${examKey}:`, error);
+                // Optionally render an error state for this exam or skip it
+            }
+        });
+        await Promise.all(loadPromises);
+
+        const { wrongs, progress } = window.getStats();
+        let globalTotalQ = 0; // Reset globalTotalQ for each render
 
         // Ensure consistent order by sorting keys
         const sortedExamKeys = Object.keys(window.examData).sort();
@@ -552,30 +645,74 @@
         }
     };
 
+    // --- 최근 학습 섹션 렌더링 기능 ---
+    window.renderContinueLearning = async function() {
+        const RECENT_LEARNINGS_KEY = 'recent_learnings';
+        const recentLearnings = JSON.parse(localStorage.getItem(RECENT_LEARNINGS_KEY) || '[]');
+        const container = document.getElementById('continue-learning-grid');
+        const section = document.getElementById('continue-learning-section');
+
+        if (recentLearnings.length === 0) {
+            if (section) section.style.display = 'none';
+            return;
+        }
+
+        if (section) section.style.display = 'block';
+        container.innerHTML = ''; // Clear previous content
+
+        for (const item of recentLearnings) {
+            const { examKey, sectionId } = item;
+            
+            let exam;
+            try {
+                exam = await window.loadExamJsonData(examKey);
+            } catch (error) {
+                console.error(`Failed to load exam data for recent learning ${examKey}:`, error);
+                continue; // Skip this item if data fails to load
+            }
+
+            if (!exam) continue; // Should not happen if loadExamJsonData throws or returns null
+
+            const sectionObj = exam.sections.find(s => String(s.id) === String(sectionId));
+            if (!sectionObj) continue; // Skip if section not found
+
+            const examTitle = exam.title;
+            const sectionName = sectionObj.name;
+
+            const card = document.createElement('a');
+            card.href = `quiz.html?exam=${examKey}&section=${sectionId}`;
+            card.className = 'section-item'; // Reusing existing style
+            card.style = "flex-direction: column; align-items: flex-start; gap: 0.5rem;";
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <span style="font-weight: 500;">${examTitle} > ${sectionName}</span>
+                </div>
+                <small style="color: var(--secondary); font-size: 0.75rem;">최근 학습일: ${new Date(item.timestamp).toLocaleDateString()}</small>
+            `;
+            container.appendChild(card);
+        }
+    };
+
     window.examData = {}; // Explicitly initialize window.examData here to ensure it exists
-    let expectedDataFiles = 4; // cim, fia, crea1, crea2
-    let dataFilesLoaded = 0;
-    console.log("main.js: Initializing data loading checks.");
 
-
-    window.addEventListener('dataLoaded', (e) => {
-        dataFilesLoaded++;
-        console.log(`main.js: dataLoaded event received for ${e.detail.examKey}. Success: ${e.detail.success}. Total loaded: ${dataFilesLoaded}/${expectedDataFiles}`);
-        if (e.detail && e.detail.success === false) {
-            console.warn(`main.js: Failed to load data for ${e.detail.examKey}:`, e.detail.error);
-            // Even on failure, we let the counter increment to ensure renderExams eventually runs.
-            // The robust check inside renderExams will handle missing data.
-        } else if (e.detail && e.detail.success === true) {
-            console.log(`main.js: Successfully loaded data for ${e.detail.examKey}`);
+    window.loadExamJsonData = async function(examKey) {
+        if (window.examData[examKey]) {
+            return window.examData[examKey]; // Already loaded
         }
-
-        if (dataFilesLoaded === expectedDataFiles) {
-            console.log("main.js: All expected data files reported. Calling renderExams. Current window.examData state:", window.examData);
-            window.renderExams();
-            window.checkReviews();
-            window.updateStreakUI();
+        try {
+            const response = await fetch(`/data/${examKey}_exam.json`);
+            if (!response.ok) {
+                throw new Error(`Failed to load ${examKey}_exam.json: ${response.statusText}`);
+            }
+            const data = await response.json();
+            window.examData[examKey] = data;
+            console.log(`main.js: Successfully loaded data for ${examKey}`);
+            return data;
+        } catch (error) {
+            console.error(`main.js: Error loading data for ${examKey}:`, error);
+            throw error;
         }
-    });
+    };
 
     // window.addEventListener('DOMContentLoaded', () => {
     //     console.log("main.js: DOMContentLoaded fired. Checking if exams can be rendered early (for debug).");

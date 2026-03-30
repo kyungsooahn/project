@@ -75,14 +75,14 @@
                 <p id="explanation-text"></p>
                 
                 <div class="ai-chat-container">
-                    <button class="ai-ask-btn" onclick="toggleAIChat()">
+                    <button class="ai-ask-btn" onclick="window.toggleAIChat()">
                         <span>🤖 AI에게 더 자세히 물어보기</span>
                     </button>
                     <div id="ai-chat-box" class="ai-chat-box">
                         <div id="ai-messages" class="ai-messages">
                             <div class="message ai">무엇이 궁금하신가요? 해당 문제에 대해 더 자세히 설명해 드릴 수 있습니다.</div>
                         </div>
-                        <form class="ai-input-area" onsubmit="sendMessage(event)">
+                        <form class="ai-input-area" onsubmit="window.sendMessage(event, questions[currentIdx], currentIdx)">
                             <input type="text" id="ai-input" placeholder="질문을 입력하세요..." autocomplete="off">
                             <button type="submit">전송</button>
                         </form>
@@ -129,10 +129,6 @@
         </footer>
     </div>
 
-    <script src="data/cim.js"></script>
-    <script src="data/fia.js"></script>
-    <script src="data/crea1.js"></script>
-    <script src="data/crea2.js"></script>
     <script>
         const WRONG_KEY = 'wrong_questions';
         const SOLVED_KEY = 'solved_questions';
@@ -153,19 +149,50 @@
         let shuffledOptions = [];
         let correctOptionIdx = -1;
 
-        window.onload = () => {
+        window.onload = async () => { // Make async
             const params = new URLSearchParams(location.search);
             examKey = params.get('exam');
             sectionId = params.get('section');
 
-            if (!examKey || !window.examData[examKey]) {
+            if (!examKey) { // Removed !window.examData[examKey] check here
                 alert('잘못된 접근입니다.');
+                location.href = 'index.html';
+                return;
+            }
+
+            try {
+                await window.loadExamJsonData(examKey); // Dynamically load the specific exam data
+            } catch (error) {
+                alert('시험 데이터를 로드하는 데 실패했습니다.');
+                console.error(error);
                 location.href = 'index.html';
                 return;
             }
 
             const examData = window.examData[examKey];
             document.getElementById('exam-title').textContent = examData.title;
+
+            // --- Save recent learning activity ---
+            const RECENT_LEARNINGS_KEY = 'recent_learnings';
+            let recentLearnings = JSON.parse(localStorage.getItem(RECENT_LEARNINGS_KEY) || '[]');
+            
+            const newLearning = { 
+                examKey: examKey, 
+                sectionId: sectionId,
+                timestamp: new Date().toISOString()
+            };
+
+            // Remove existing entry for the same examKey and sectionId
+            recentLearnings = recentLearnings.filter(
+                item => !(item.examKey === examKey && item.sectionId === sectionId)
+            );
+
+            // Add new learning to the beginning and keep only the latest 5
+            recentLearnings.unshift(newLearning);
+            recentLearnings = recentLearnings.slice(0, 5);
+            
+            localStorage.setItem(RECENT_LEARNINGS_KEY, JSON.stringify(recentLearnings));
+            // --- End Save recent learning activity ---
 
             let rawQuestions = [];
             if (sectionId === 'all') {
@@ -327,81 +354,6 @@
                 btn.onclick = () => checkAnswer(i);
                 container.appendChild(btn);
             });
-        }
-
-        // AI Chat Functions
-        function toggleAIChat() {
-            const chatBox = document.getElementById('ai-chat-box');
-            chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex';
-            if (chatBox.style.display === 'flex') {
-                document.getElementById('ai-input').focus();
-            }
-        }
-
-        async function sendMessage(e) {
-            e.preventDefault();
-            const input = document.getElementById('ai-input');
-            const message = input.value.trim();
-            if (!message) return;
-
-            addMessage(message, 'user');
-            input.value = '';
-
-            const loadingId = addMessage('생각 중...', 'ai loading');
-
-            try {
-                const response = await callAI(message);
-                updateMessage(loadingId, response);
-            } catch (err) {
-                updateMessage(loadingId, '죄송합니다. 오류가 발생했습니다: ' + err.message);
-            }
-        }
-
-        function addMessage(text, type) {
-            const container = document.getElementById('ai-messages');
-            const div = document.createElement('div');
-            const id = 'msg-' + Date.now();
-            div.id = id;
-            div.className = 'message ' + type;
-            div.innerText = text;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-            return id;
-        }
-
-        function updateMessage(id, text) {
-            const div = document.getElementById(id);
-            if (div) {
-                div.innerText = text;
-                div.classList.remove('loading');
-                const container = document.getElementById('ai-messages');
-                container.scrollTop = container.scrollHeight;
-            }
-        }
-
-        async function callAI(userMessage) {
-            const q = questions[currentIdx];
-            const payload = {
-                question: q.q,
-                options: q.options,
-                answer: q.options[q.answer],
-                explanation: q.exp,
-                userQuery: userMessage,
-                history: [] // Can implement history later
-            };
-
-            const response = await fetch('/api/ai-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error('API 호출 실패');
-            }
-
-            const data = await response.json();
-            return data.reply;
         }
 
         function checkAnswer(idx) {
