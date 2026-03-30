@@ -156,6 +156,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const examKey = urlParams.get('exam');
         const sectionId = urlParams.get('section');
+        console.log(`[mock.html] Initializing with examKey: ${examKey}, sectionId: ${sectionId}`);
 
         let examParts = [];
         let currentPartIdx = 0;
@@ -170,22 +171,24 @@
         let timeLeft = 0;
         let timerInterval;
 
-        if (examKey) {
-            const dataScript = document.createElement('script');
-            dataScript.src = `data/${examKey}.js`;
-            dataScript.onerror = () => { alert('데이터 로드 실패'); location.href='index.html'; };
-            document.head.appendChild(dataScript);
-
-            // Listen for the custom dataLoaded event
-            window.addEventListener('dataLoaded', (e) => {
-                if (e.detail && e.detail.examKey === examKey && e.detail.success) {
-                    init();
-                } else if (e.detail && e.detail.examKey === examKey && !e.detail.success) {
-                    alert('데이터 로드 실패: ' + e.detail.error.message);
-                    location.href = 'index.html';
-                }
-            });
+        // Data loading is now handled by main.js's window.loadExamJsonData
+        if (!examKey) {
+            alert('잘못된 접근입니다.');
+            location.href = 'index.html';
+            return;
         }
+        
+        console.log(`[mock.html] Calling window.loadExamJsonData for examKey: ${examKey}`);
+        // Load the exam data using the global function
+        window.loadExamJsonData(examKey).then(() => {
+            console.log(`[mock.html] window.loadExamJsonData succeeded for examKey: ${examKey}`);
+            init();
+        }).catch(error => {
+            console.error('[mock.html] 시험 데이터를 로드하는 데 실패했습니다:', error);
+            alert('시험 데이터를 로드하는 데 실패했습니다: ' + error.message);
+            location.href = 'index.html';
+        });
+
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -196,11 +199,27 @@
         }
 
         function init() {
+            console.log('[mock.html] init() called.');
             const exam = window.examData[examKey];
+            console.log('[mock.html] exam object in init():', exam);
+
+            if (!exam) {
+                console.error(`[mock.html] Error: exam data not found for key ${examKey} in window.examData.`);
+                alert('시험 데이터를 찾을 수 없습니다.');
+                location.href = 'index.html';
+                return;
+            }
+
             document.getElementById('exam-title').innerText = exam.title;
 
             if (sectionId) {
                 const section = exam.sections.find(s => s.id === sectionId);
+                if (!section) {
+                    console.error(`[mock.html] Error: section data not found for sectionId ${sectionId} in examKey ${examKey}.`);
+                    alert('섹션 데이터를 찾을 수 없습니다.');
+                    location.href = 'index.html';
+                    return;
+                }
                 const questionsWithId = section.questions.map(q => ({...q, sectionId: section.id}));
                 examParts = [{
                     qs: shuffle([...questionsWithId]),
@@ -250,6 +269,7 @@
                 }
             }
             
+            console.log('[mock.html] examParts after initialization:', examParts);
             window.addEventListener('keydown', handleKeyPress);
             loadPart(0);
         }
@@ -258,6 +278,7 @@
             currentPartIdx = idx;
             const part = examParts[idx];
             questions = part.qs;
+            console.log(`[mock.html] questions array in loadPart(${idx}):`, questions);
             userAnswers = new Array(questions.length).fill(null);
             
             // Generate shuffled mappings for options once per part
