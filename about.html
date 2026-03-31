@@ -52,6 +52,9 @@
         .exam-info-card { background: var(--primary); color: white; padding: 1.5rem; border-radius: 1rem; margin-top: 1rem; }
         .exam-info-card h4 { margin-top: 0; margin-bottom: 0.5rem; }
         .exam-info-card p { margin-bottom: 0; font-size: 0.9rem; opacity: 0.9; }
+        .header-nav { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;}
+        .header-nav a { text-decoration: none; color: var(--text-color); padding: 0.5rem 1rem; border-radius: 0.5rem; transition: background 0.2s; }
+        .header-nav a:hover { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
@@ -61,13 +64,26 @@
                 <div style="display: flex; flex-direction: column;"><a href="index.html" class="lite-logo">LI<span>TE</span></a><div class="lite-tagline">License Is Talent</div></div>
                 <h1 style="margin: 0; font-size: 1.4rem;">🎓 서비스 소개</h1>
             </div>
+            <nav class="header-nav">
+                <a href="cim.html">투자자산운용사</a>
+                <a href="fia.html">금융투자분석사</a>
+                <a href="crea1.html">공인중개사 1차</a>
+                <a href="crea2.html">공인중개사 2차</a>
+                <a href="blog.html">블로그</a>
+            </nav>
         </header>
         
         <main class="content-page">
             <section>
                 <h2>🚀 LITE의 비전</h2>
-                <p><strong>LITE</strong>는 지식의 평등한 기회를 믿습니다. 고가의 수험서와 유료 강의 없이도 누구나 전문 자격증에 도전하고 합격할 수 있는 환경을 만드는 것이 우리의 목표입니다. 우리는 최신 기출 데이터를 바탕으로 가장 효율적인 학습 경로를 제시합니다.</p>
+                <p><strong>LITE</strong>는 단순히 자격증 취득을 돕는 것을 넘어, 모든 학습자가 자신의 잠재력을 최대한 발휘할 수 있도록 지원하는 것을 목표로 합니다. 고가의 수험서와 유료 강의 없이도 누구나 전문 자격증에 도전하고 합격할 수 있는 평등한 학습 환경을 조성하는 것이 우리의 핵심 가치입니다. 우리는 최신 기출 데이터를 바탕으로 가장 효율적이고 개인화된 학습 경로를 제시하며, 여러분의 성공적인 미래를 위한 든든한 동반자가 되고자 합니다.</p>
                 <p>기본적으로 모든 데이터는 사용자의 브라우저에 직접 저장되지만, <strong>이메일과 비밀번호만으로 가능한 최소한의 회원가입</strong>을 통해 본인의 소중한 학습 기록을 클라우드에 안전하게 보관하고 여러 기기에서 동기화할 수 있습니다.</p>
+            </section>
+
+            <section>
+                <h2>🌟 우리의 이야기 (Our Story)</h2>
+                <p>LITE는 금융 및 부동산 자격증 준비 과정에서 겪는 수험생들의 어려움에 공감하며 시작되었습니다. 복잡한 이론과 방대한 문제량 앞에서 좌절하지 않도록, 우리는 **최신 기술과 교육적 통찰을 결합**하여 누구나 쉽게 접근하고 효율적으로 학습할 수 있는 플랫폼을 만들었습니다.</p>
+                <p>저희 팀은 수년간의 교육 콘텐츠 개발 경험과 기술 전문성을 바탕으로, 실제 시험 환경을 완벽하게 재현하는 것은 물론, **개개인의 학습 패턴을 분석하여 최적의 복습 주기**를 제안합니다. LITE의 미션은 명확합니다: 불필요한 비용과 시간 낭비 없이, 오직 학습의 본질에 집중하여 여러분의 합격을 앞당기는 것입니다. 우리는 여러분의 성공이 곧 우리의 성공이라 믿으며, 끊임없이 서비스를 발전시켜 나갈 것입니다.</p>
             </section>
 
             <section>
@@ -106,22 +122,27 @@
 
             <section>
                 <h2>📚 지원 자격증 안내</h2>
-                <p>현재 LITE에서는 아래와 같은 전문 자격증의 기출 문제 데이터를 제공하고 있습니다. 각 데이터는 주기적으로 업데이트되어 최신 출제 경향을 반영합니다.</p>
+                <p>현재 LITE에서는 아래와 같은 전문 자격증의 기출 문제 데이터를 제공하고 있으며, 각 자격증에 대한 LITE만의 특별한 학습 전략을 제시합니다. 모든 데이터는 주기적으로 업데이트되어 최신 출제 경향을 반영합니다.</p>
                 
                 <div class="exam-info-card">
-                    <h4>투자자산운용사 (CIM)</h4>
-                    <p>펀드매니저가 되기 위한 필수 자격증으로, 자본시장법부터 주식/채권 운용 전략까지 폭넓은 금융 지식을 다룹니다.</p>
+                    <h4>투자자산운용사 (CIM) - LITE와 함께 한 번에 합격!</h4>
+                    <p>펀드매니저가 되기 위한 필수 자격증으로, 자본시장법부터 주식/채권 운용 전략까지 폭넓은 금융 지식을 다룹니다. LITE는 방대한 분량의 기출 문제를 주제별로 세분화하고, AI 튜터를 통해 난해한 금융 용어와 복잡한 계산 문제에 대한 명쾌한 해설을 제공합니다. 실제 시험 환경과 유사한 모의고사를 통해 실전 감각을 극대화하고, 개인별 오답률 분석으로 취약 부분을 집중 공략할 수 있습니다.</p>
                 </div>
 
                 <div class="exam-info-card" style="background: var(--secondary);">
-                    <h4>금융투자분석사 (FIA)</h4>
-                    <p>조사분석인력(애널리스트)으로 등록하기 위한 자격으로, 기업 가치 평가와 정교한 재무 분석 능력을 검증합니다.</p>
+                    <h4>금융투자분석사 (FIA) - 날카로운 분석력을 LITE에서!</h4>
+                    <p>조사분석인력(애널리스트)으로 등록하기 위한 자격으로, 기업 가치 평가와 정교한 재무 분석 능력을 검증합니다. LITE는 계량분석, 재무제표 분석, 기업 가치 평가 등 핵심 과목별 문제를 무제한으로 제공하며, 특히 복잡한 사례 문제에 대한 AI 기반의 단계별 풀이 가이드를 통해 문제 해결 능력을 향상시켜 줍니다. 상세 통계 분석을 통해 자신의 강점과 약점을 정확히 파악하고 효율적인 학습 전략을 수립하세요.</p>
                 </div>
 
                 <div class="exam-info-card" style="background: var(--success);">
-                    <h4>공인중개사 (CREA)</h4>
-                    <p>부동산 거래의 전문가로서 민법, 공법 등 복잡한 법률 지식과 부동산학개론을 마스터해야 하는 국가 전문 자격입니다.</p>
+                    <h4>공인중개사 (CREA) - 부동산 전문가의 첫 걸음, LITE와 함께!</h4>
+                    <p>부동산 거래의 전문가로서 민법, 공법 등 복잡한 법률 지식과 부동산학개론을 마스터해야 하는 국가 전문 자격입니다. LITE는 1차와 2차 전 과목에 걸친 방대한 기출 데이터를 체계적으로 관리하며, 특히 암기 위주의 과목에 대해서는 에빙하우스 복습 시스템을 통해 장기 기억 전환을 돕습니다. 판례 문제나 까다로운 법 조항에 대한 AI 튜터의 즉각적인 해설은 여러분의 학습 시간을 획기적으로 단축시켜 줄 것입니다.</p>
                 </div>
+            </section>
+
+            <section>
+                <h2>🤝 문의 및 지원</h2>
+                <p>LITE는 항상 여러분의 목소리에 귀 기울이고 있습니다. 서비스 이용 중 궁금한 점이나 건의사항이 있다면 언제든지 <a href="contact.html">문의하기</a> 페이지를 통해 연락 주세요. 여러분의 성공적인 학습을 위해 최선을 다해 지원하겠습니다.</p>
             </section>
 
             <section>
@@ -147,9 +168,5 @@
             </section>
         </main>
 
-        <footer style="margin-top: 4rem; text-align: center; font-size: 0.8rem; color: var(--secondary);">
-            <p>&copy; 2026 LITE. All rights reserved.</p>
-        </footer>
-    </div>
 </body>
 </html>

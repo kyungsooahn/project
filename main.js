@@ -727,4 +727,37 @@
     // });
 
     window.addEventListener('load', window.updateAuthUI);
+
+    // --- Dynamic Footer Rendering ---
+    window.renderFooter = function() {
+        const footerHtml = `
+            <footer>
+                <div class="footer-links">
+                    <a href="index.html">홈</a>
+                    <a href="about.html">서비스 소개</a>
+                    <a href="blog.html">블로그</a>
+                    <a href="cim.html">투자자산운용사</a>
+                    <a href="fia.html">금융투자분석사</a>
+                    <a href="crea1.html">공인중개사 1차</a>
+                    <a href="crea2.html">공인중개사 2차</a>
+                    <a href="privacy.html">개인정보처리방침</a>
+                    <a href="contact.html">문의하기</a>
+                    <a href="solved.html">맞춘 문제</a>
+                    <a href="review.html">오답 노트</a>
+                    <a href="bookmarks.html">즐겨찾기</a>
+                    <a href="stats.html">학습 통계</a>
+                </div>
+                <p>&copy; 2026 LITE. All rights reserved.</p>
+            </footer>
+        `;
+        const container = document.querySelector('.container'); // Assuming .container is the main wrapper
+        if (container) {
+            container.insertAdjacentHTML('beforeend', footerHtml);
+        }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // Render footer after DOM is loaded
+        window.renderFooter();
+    });
 })();
