@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-G99S2G82RN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-G99S2G82RN');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LITE - 자격증 소개</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="main.js"></script>
+    <style>
+        .license-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .license-item {
+            background: rgba(0,0,0,0.03);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+        .license-item:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .license-item h3 {
+            margin-top: 0;
+            color: var(--primary); /* Default color */
+            transition: color 0.2s;
+        }
+        .license-item:hover h3 {
+            color: white; /* Color on hover */
+        }
+        .license-item p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-color-light);
+            transition: color 0.2s;
+        }
+        .license-item:hover p {
+            color: rgba(255,255,255,0.8);
+        }
+        .license-content-area {
+            background: rgba(0,0,0,0.03);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            min-height: 400px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .license-content-area h2 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 50px auto;
+            display: none; /* Hidden by default */
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="display: flex; flex-direction: column;">
+                <a href="index.html" class="lite-logo">LI<span>TE</span></a>
+                <div class="lite-tagline">License Is Talent</div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end;">
+                <div id="auth-container" style="display: flex; align-items: center; gap: 0.5rem;"></div>
+                <div id="streak-badge" style="display: none; background: rgba(255, 107, 107, 0.1); color: #ff6b6b; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid rgba(255, 107, 107, 0.2);">🔥 <span id="streak-count">0</span>일째</div>
+                <button onclick="location.href='stats.html'" class="theme-toggle" title="통계 분석">📊</button>
+                <button onclick="location.href='bookmarks.html'" class="theme-toggle" title="즐겨찾기">⭐</button>
+                <button onclick="location.href='solved.html'" class="theme-toggle" title="맞춘 문제">✅</button>
+                <button onclick="location.href='review.html'" class="theme-toggle" title="오답 노트">📝</button>
+                <button onclick="toggleTheme()" class="theme-toggle">🌙</button>
+            </div>
+        </header>
+
+        <section class="hero-section">
+            <h2>🎓 LITE 자격증 소개</h2>
+            <p>LITE에서 제공하는 다양한 자격증에 대한 상세 정보를 확인하고, 학습 계획을 세워보세요.</p>
+        </section>
+
+        <section class="license-selection-section" style="margin-top: 2rem;">
+            <h3>관심 있는 자격증을 선택하세요</h3>
+            <div class="license-list">
+                <div class="license-item" data-src="cim.html" data-target-title="투자자산운용사 (CIM)">
+                    <h3>투자자산운용사 (CIM)</h3>
+                    <p>금융기관에서 고객의 자산을 운용하는 전문 인력을 양성하는 시험입니다.</p>
+                </div>
+                <div class="license-item" data-src="fia.html" data-target-title="금융투자분석사 (FIA)">
+                    <h3>금융투자분석사 (FIA)</h3>
+                    <p>금융투자회사에서 분석 보고서를 작성하는 애널리스트 자격입니다.</p>
+                </div>
+                <div class="license-item" data-src="crea1.html" data-target-title="공인중개사 1차">
+                    <h3>공인중개사 1차</h3>
+                    <p>부동산 중개업무를 수행하기 위한 국가 공인 자격증의 첫 단계입니다.</p>
+                </div>
+                <div class="license-item" data-src="crea2.html" data-target-title="공인중개사 2차">
+                    <h3>공인중개사 2차</h3>
+                    <p>부동산 중개업무를 수행하기 위한 국가 공인 자격증의 두 번째 단계입니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="license-detail-section" style="margin-top: 2rem;">
+            <div class="license-content-area" id="license-detail-content">
+                <h2 id="license-detail-title">자격증 내용을 보려면 위에서 선택하세요.</h2>
+                <div class="loading-spinner" id="loading-spinner"></div>
+                <div id="dynamic-content">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const licenseItems = document.querySelectorAll('.license-item');
+            const licenseDetailContent = document.getElementById('dynamic-content');
+            const licenseDetailTitle = document.getElementById('license-detail-title');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            licenseItems.forEach(item => {
+                item.addEventListener('click', async () => {
+                    const src = item.dataset.src;
+                    const title = item.dataset.targetTitle;
+
+                    licenseDetailTitle.textContent = `${title} 상세 정보`;
+                    licenseDetailContent.innerHTML = ''; // Clear previous content
+                    loadingSpinner.style.display = 'block'; // Show spinner
+
+                    try {
+                        const response = await fetch(src);
+                        const text = await response.text();
+
+                        // Parse the HTML and extract the main content
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(text, 'text/html');
+                        // Assuming the main content is within a <main> or similar tag in the source HTML
+                        const mainContent = doc.querySelector('body .container > *:not(header)'); // Exclude header
+
+                        if (mainContent) {
+                            licenseDetailContent.innerHTML = mainContent.innerHTML;
+                        } else {
+                            licenseDetailContent.textContent = '콘텐츠를 불러오는 데 실패했습니다. 원본 파일의 구조를 확인해 주세요.';
+                        }
+                    } catch (error) {
+                        console.error('Error loading license content:', error);
+                        licenseDetailContent.textContent = '콘텐츠를 불러오는 중 오류가 발생했습니다.';
+                    } finally {
+                        loadingSpinner.style.display = 'none'; // Hide spinner
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
