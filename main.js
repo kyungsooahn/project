@@ -34,7 +34,8 @@
                             <input type="email" id="auth-email" placeholder="example@email.com" required>
                         </div>
                         <div class="auth-input-group">
-                            <label for="auth-password">비밀번호</                            <input type="password" id="auth-password" placeholder="••••••••" required>
+                            <label for="auth-password">비밀번호</label>
+                            <input type="password" id="auth-password" placeholder="••••••••" required>
                         </div>
                         <button type="submit" id="auth-submit-btn" class="auth-submit-btn">로그인</button>
                     </form>
