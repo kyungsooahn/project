@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://pass.example.com/sitemap.xml
+Sitemap: https://project-alpha-rouge-57.vercel.app/sitemap.xml
