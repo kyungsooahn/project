@@ -29,6 +29,40 @@
         [data-theme="dark"] .content-page th { background-color: #333; }
         .strategy-card { background: rgba(0,0,0,0.03); padding: 1.5rem; border-radius: 1rem; margin-top: 1.5rem; border: 1px solid rgba(0,0,0,0.08); }
         [data-theme="dark"] .strategy-card { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+        
+        /* Tab Styles */
+        .tabs { display: flex; flex-wrap: wrap; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
+        .tab-button {
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            background-color: var(--background-secondary);
+            color: var(--text-color-light);
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            margin-right: 0.25rem;
+            transition: all 0.2s ease-in-out;
+            font-weight: bold;
+            flex-grow: 1; /* Allow buttons to grow and fill space */
+            text-align: center; /* Center text in buttons */
+        }
+        .tab-button.active {
+            border-color: var(--border);
+            border-bottom: 2px solid var(--background); /* To cover the main border-bottom */
+            background-color: var(--background);
+            color: var(--primary);
+            cursor: default;
+        }
+        .tab-content {
+            display: none;
+            padding: 1.5rem 0;
+            border-top: 2px solid var(--border);
+            margin-top: -2px; /* Overlap with tab border */
+        }
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -41,68 +75,220 @@
         </header>
         
         <main class="content-page">
-            <section>
-                <h2>자격증이란?</h2>
-                <p><strong>투자자산운용사 (Certified Investment Manager, CIM)</strong>는 금융투자협회에서 주관하는 국가공인 민간자격증으로, 고객의 투자 일임 재산 또는 신탁 재산을 운용하는 전문 인력을 양성하는 자격입니다. 펀드매니저, 투자 전략가 등 자산운용 관련 직무를 수행하는 데 필수적인 자격증으로 인정받고 있습니다.</p>
-                <p>주식, 채권, 펀드 등 다양한 금융 상품에 대한 깊이 있는 지식과 분석 능력을 요구하며, 투자자의 자산을 효율적으로 관리하고 수익을 창출하는 데 필요한 전문성을 갖추었음을 증명합니다.</p>
-            </section>
+            <div class="tabs">
+                <button class="tab-button active" data-tab="intro">시험 소개</button>
+                <button class="tab-button" data-tab="concepts">핵심 개념 설명</button>
+                <button class="tab-button" data-tab="glossary">용어사전</button>
+            </div>
 
-            <section>
-                <h2>시험 구조 및 커리큘럼</h2>
-                <p>투자자산운용사 시험은 총 3과목으로 구성되어 있으며, 각 과목당 40문항씩 총 120문항이 출제됩니다. 시험 시간은 120분이며, 과목별 과락 없이 총점 70점 이상을 득점해야 합격할 수 있습니다.</p>
-                
-                <h3>시험 과목별 상세 내용</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>과목명</th>
-                            <th>문항 수</th>
-                            <th>주요 내용</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1과목: 금융상품 및 투자분석Ⅰ</td>
-                            <td>40문항</td>
-                            <td>투자운용과 관련된 법규 및 세제, 직무윤리, 거시경제 분석, 투자 분석 기법</td>
-                        </tr>
-                        <tr>
-                            <td>2과목: 금융상품 및 투자분석Ⅱ</td>
-                            <td>40문항</td>
-                            <td>주식 및 채권 분석, 파생상품 투자운용, 해외투자운용, 부동산 및 특별자산 투자운용</td>
-                        </tr>
-                        <tr>
-                            <td>3과목: 직무윤리 및 법규</td>
-                            <td>40문항</td>
-                            <td>집합투자재산 운용(펀드운용), 신탁재산 운용, 투자 일임재산 운용, 투자자산운용과 관련된 리스크 관리</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p>각 과목은 이론 지식뿐만 아니라 실제 투자 상황에 대한 이해와 적용 능력을 평가하는 문제들로 구성됩니다.</p>
-            </section>
+            <div id="intro" class="tab-content active">
+                <section>
+                    <h2>자격증이란?</h2>
+                    <p><strong>투자자산운용사 (Certified Investment Manager, CIM)</strong>는 금융투자협회에서 주관하는 국가공인 민간자격증으로, 고객의 투자 일임 재산 또는 신탁 재산을 운용하는 전문 인력을 양성하는 자격입니다. 펀드매니저, 투자 전략가 등 자산운용 관련 직무를 수행하는 데 필수적인 자격증으로 인정받고 있습니다.</p>
+                    <p>주식, 채권, 펀드 등 다양한 금융 상품에 대한 깊이 있는 지식과 분석 능력을 요구하며, 투자자의 자산을 효율적으로 관리하고 수익을 창출하는 데 필요한 전문성을 갖추었음을 증명합니다.</p>
+                </section>
 
-            <section>
-                <h2>자격증 취득의 이점</h2>
-                <ul>
-                    <li><strong>경쟁력 강화:</strong> 자산운용, 증권사, 은행 등 금융기관 취업 및 이직 시 강력한 경쟁력 확보</li>
-                    <li><strong>전문성 인정:</strong> 투자 전문가로서의 공신력 및 전문성 대외적으로 인정</li>
-                    <li><strong>직무 역량 향상:</strong> 다양한 금융 상품 및 투자 전략에 대한 심층적인 이해를 통해 실무 역량 증진</li>
-                    <li><strong>직무 범위 확장:</strong> 투자 일임업, 투자 자문업 등 자산운용 관련 직무로의 진출 기반 마련</li>
-                </ul>
-            </section>
+                <section>
+                    <h2>시험 구조 및 커리큘럼</h2>
+                    <p>투자자산운용사 시험은 총 3과목으로 구성되어 있으며, 각 과목당 40문항씩 총 120문항이 출제됩니다. 시험 시간은 120분이며, 과목별 과락 없이 총점 70점 이상을 득점해야 합격할 수 있습니다.</p>
+                    
+                    <h3>시험 과목별 상세 내용</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>과목명</th>
+                                <th>문항 수</th>
+                                <th>주요 내용</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1과목: 금융상품 및 투자분석Ⅰ</td>
+                                <td>40문항</td>
+                                <td>투자운용과 관련된 법규 및 세제, 직무윤리, 거시경제 분석, 투자 분석 기법</td>
+                            </tr>
+                            <tr>
+                                <td>2과목: 금융상품 및 투자분석Ⅱ</td>
+                                <td>40문항</td>
+                                <td>주식 및 채권 분석, 파생상품 투자운용, 해외투자운용, 부동산 및 특별자산 투자운용</td>
+                            </tr>
+                            <tr>
+                                <td>3과목: 직무윤리 및 법규</td>
+                                <td>40문항</td>
+                                <td>집합투자재산 운용(펀드운용), 신탁재산 운용, 투자 일임재산 운용, 투자자산운용과 관련된 리스크 관리</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>각 과목은 이론 지식뿐만 아니라 실제 투자 상황에 대한 이해와 적용 능력을 평가하는 문제들로 구성됩니다.</p>
+                </section>
+
+                <section>
+                    <h2>자격증 취득의 이점</h2>
+                    <ul>
+                        <li><strong>경쟁력 강화:</strong> 자산운용, 증권사, 은행 등 금융기관 취업 및 이직 시 강력한 경쟁력 확보</li>
+                        <li><strong>전문성 인정:</strong> 투자 전문가로서의 공신력 및 전문성 대외적으로 인정</li>
+                        <li><strong>직무 역량 향상:</strong> 다양한 금융 상품 및 투자 전략에 대한 심층적인 이해를 통해 실무 역량 증진</li>
+                        <li><strong>직무 범위 확장:</strong> 투자 일임업, 투자 자문업 등 자산운용 관련 직무로의 진출 기반 마련</li>
+                    </ul>
+                </section>
 
 
-                    <h3>💡 LITE와 함께하는 CIM 합격 전략</h3>
+                        <h3>💡 LITE와 함께하는 CIM 합격 전략</h3>
+                        <ol>
+                            <li><strong>기출 문제 반복 학습:</strong> LITE가 제공하는 방대한 기출 문제를 통해 출제 경향을 파악하고 문제 해결 능력을 키우세요.</li>
+                            <li><strong>AI 튜터 활용:</strong> 이해하기 어려운 개념이나 복잡한 계산 문제는 AI 튜터에게 질문하여 완벽하게 이해하고 넘어가세요.</li>
+                            <li><strong>오답 노트 완벽 정리:</strong> 틀린 문제는 LITE의 스마트 오답 노트를 활용하여 주기적으로 복습하고, 취약 유형을 집중적으로 보완하세요.</li>
+                            <li><strong>학습 통계 분석:</strong> 과목별 정답률과 학습 진행 상황을 통계 분석 기능으로 확인하며 자신에게 맞는 학습 계획을 수립하고 조정하세요.</li>
+                            <li><strong>꾸준함 유지:</strong> 매일 조금씩이라도 꾸준히 학습하는 습관을 LITE의 스트릭 기능을 통해 유지하며 합격에 필요한 학습량을 채워나가세요.</li>
+                        </ol>
+                        <p>투자자산운용사는 방대한 학습량을 요구하지만, LITE의 체계적인 학습 시스템과 함께라면 효율적인 준비가 가능합니다.</p>
+                    </div>
+                </section>
+            </div>
+
+            <div id="concepts" class="tab-content">
+                <section>
+                    <h2>핵심 개념 설명</h2>
+                    <h3>투자자산운용사란?</h3>
+                    <p>투자자산운용사는 고객의 자산을 운용하는 금융 전문가를 의미합니다. 주식, 채권, 펀드 등 다양한 투자 상품에 대한 깊이 있는 이해를 바탕으로 고객의 투자 목표 달성을 돕습니다.</p>
+                    <h3>리스크 관리</h3>
+                    <p>투자에 있어 리스크 관리는 필수적입니다. 시장 리스크, 신용 리스크, 운영 리스크 등을 파악하고 적절한 헤징 전략을 통해 손실을 최소화하는 방법을 배웁니다.</p>
+                    <h3>01 금융투자세제</h3>
+                    <p>금융투자협회에서 발간하는 '금융투자세제' 교재의 주요 핵심 내용은 금융상품 투자 시 발생하는 세금의 원리와 구체적인 과세 체계를 다룹니다.</p>
+                    <h4>1. 국세기본법 (조세의 기초)</h4>
+                    <ul>
+                        <li>세법 전반에 공통적으로 적용되는 기본 원칙을 다룹니다.</li>
+                        <li><strong>조세의 분류:</strong> 국세와 지방세, 직접세와 간접세, 보통세와 목적세 등.</li>
+                        <li><strong>납세의무:</strong> 납세의무의 성립(과세요건 충족), 확정(신고 또는 결정), 소멸(납부, 충당, 제척기간 만료, 소멸시효 완성).</li>
+                        <li><strong>수정신고 및 경정청구:</strong> 세금을 적게 신고했을 때(수정신고)와 많이 신고했을 때(경정청구)의 절차.</li>
+                    </ul>
+                    <h3>02 절세전략</h3>
+                    <p>금융투자협회 교재의 '금융자산 TAX-PLANNING(절세전략)' 부분은 금융소득종합과세를 피하거나 세부담을 최소화하기 위한 구체적인 전략을 다룹니다.</p>
+                    <h4>1. 금융소득종합과세와 TAX-PLANNING</h4>
+                    <ul>
+                        <li><strong>기준금리:</strong> 인별 연간 금융소득(이자+배당) 합계액이 <strong>2,000만 원</strong>을 초과할 경우 종합과세 대상이 됩니다.</li>
+                        <li><strong>절세 원칙:</strong>
+                            <ul>
+                                <li><strong>소득의 분산:</strong> 명의 분산(가족 간 증여 등)을 통해 인별 소득을 2,000만 원 이하로 유지.</li>
+                                <li><strong>시기 조절:</strong> 이자/배당의 지급 시기를 분산하여 특정 연도에 소득이 집중되지 않도록 관리.</li>
+                                <li><strong>비과세/분리과세 활용:</strong> 종합과세 대상에서 제외되는 상품 우선 투자.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <h4>2. 금융자산별 세무전략</h4>
+                    <h5>① 주식 (Stocks)</h5>
+                    <ul>
+                        <li><strong>배당소득:</strong> 종합과세 대상에 포함되나, <strong>Gross-up(배당가산)</strong> 제도를 통해 이중과세를 조정받을 수 있음.</li>
+                        <li><strong>양도소득:</strong>
+                            <ul>
+                                <li><strong>상장주식:</strong> 대주주(종목당 50억 원 이상 등 기준 확인 필요)에 해당하지 않는 일반 투자자는 장내 매도 시 양도소득세 비과세(단, 금융투자소득세 도입 여부에 따라 변동 가능).</li>
+                                <li><strong>해외주식:</strong> 연간 250만 원 기본공제 후 22% 분류과세(종합과세 미포함).</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <h5>② 채권 (Bonds)</h5>
+                    <ul>
+                        <li><strong>이자소득:</strong> 표면금리에 따른 이자는 과세 대상.</li>
+                        <li><strong>매매차익:</strong> 개인 투자자의 채권 매매차익은 현재 <strong>비과세</strong>이므로, 표면금리가 낮고 매매차익 비중이 큰 채권이 절세에 유리함.</li>
+                    </ul>
+                    <h5>③ 펀드 (Investment Trusts)</h5>
+                    <ul>
+                        <li><strong>과세 대상:</strong> 펀드 내 발생한 이자, 배당, 상장주식 외의 양도차익 등은 과세.</li>
+                        <li><strong>비과세:</strong> 펀드 내 <strong>상장주식의 매매·평가차익</strong>은 과세 대상에서 제외됨(국내 주식형 펀드의 장점).</li>
+                    </ul>
+                    <h4>4. 절세 계좌의 활용 (핵심 도구)</h4>
+                    <ul>
+                        <li><strong>ISA (개인종합자산관리계좌):</strong>
+                            <ul>
+                                <li>손익통산 후 순이익 200만 원(서민형 400만 원)까지 비과세, 초과분 9.9% 분리과세.</li>
+                            </ul>
+                        </li>
+                        <li><strong>연금저축 / IRP:</strong>
+                            <ul>
+                                <li>납입 시 세액공제 혜택.</li>
+                                <li>운용 수익에 대해 인출 시까지 과세이연(Tax-Deferred).</li>
+                                <li>연금 수령 시 저율(3~5%) 과세.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <h4>5. 증여를 활용한 TAX-PLANNING</h4>
+                    <ul>
+                        <li><strong>증여재산공제:</strong> 배우자(6억), 성년 자녀(5천만), 미성년 자녀(2천만) 공제 한도를 활용해 자산을 이전하여 미래의 상속세 및 현재의 금융소득세 부담 경감.</li>
+                        <li><strong>수익형 자산 증여:</strong> 소득이 발생하는 자산을 미리 증여하여 발생 소득을 자녀의 소득으로 귀속시킴.</li>
+                    </ul>
+                    <p><strong>학습 팁:</strong> 시험에서는 <strong>금융소득종합과세의 계산 구조(Gross-up 대상 여부)</strong>와 <strong>ISA/연금계좌의 세제 혜택 비교</strong> 문제가 자주 출제되니 이 부분을 중점적으로 확인하시기 바랍니다.</p>
+                    <h3>03 금융상품개론</h3>
+                    <p>금융투자협회 교재의 '금융상품개론'은 금융회사의 종류와 금융상품의 개요에 대한 핵심 내용을 다룹니다.</p>
+                    <h4>1. 금융회사의 종류</h4>
+                    <p>우리나라의 금융기관은 크게 통화당국, 금융중개기관, 금융보조기관으로 분류됩니다.</p>
+                    <h5>(1) 금융중개기관 (주요 금융회사)</h5>
+                    <ul>
+                        <li><strong>은행:</strong> 일반은행(시중은행, 지방은행, 외국은행 국내지점)과 특수은행(산업은행, 기업은행, 수출입은행, 농협·수협은행)으로 구분됩니다.</li>
+                        <li><strong>비은행 예금취급기관:</strong> 상호저축은행, 신용협동기구(신협, 농협·수협 지역조합, 산림조합), 새마을금고, 우체국예금 등이 포함됩니다.</li>
+                        <li><strong>금융투자업자 (자본시장법상):</strong>
+                            <ul>
+                                <li><strong>투자매매·중개업자:</strong> 증권회사, 선물회사 등</li>
+                                <li><strong>집합투자업자:</strong> 자산운용사</li>
+                                <li><strong>투자자문·일임업자:</strong> 자문사 등</li>
+                                <li><strong>신탁업자:</strong> 은행, 증권, 보험사 중 신탁업 인가를 받은 곳</li>
+                            </ul>
+                        </li>
+                        <li><strong>보험회사:</strong> 생명보험회사, 손해보험회사, 우체국보험 등으로 구분됩니다.</li>
+                        <li><strong>기타 금융기관:</strong> 여신전문금융회사(카드, 리스, 할부금융, 신기술금융), 금융지주회사, 공적금융기관 등</li>
+                    </ul>
+                    <h5>(2) 금융보조기관</h5>
+                    <ul>
+                        <li>금융기관의 기능을 원활하게 수행하도록 돕는 기관입니다.</li>
+                        <li>예: 한국거래소(KRX), 한국예탁결제원(KSD), 금융감독원(FSS), 예금보험공사(KDIC), 신용평가회사 등</li>
+                    </ul>
+                    <h4>2. 금융상품의 개요</h4>
+                    <p>금융상품은 자금의 수요자와 공급자 사이에서 거래되는 증서나 계약을 의미하며, 최근에는 <strong>금융소비자보호법</strong>과 <strong>자본시장법</strong>에 따른 분류가 중요합니다.</p>
+                    <h5>(1) 금융소비자보호법에 따른 4대 분류</h5>
                     <ol>
-                        <li><strong>기출 문제 반복 학습:</strong> LITE가 제공하는 방대한 기출 문제를 통해 출제 경향을 파악하고 문제 해결 능력을 키우세요.</li>
-                        <li><strong>AI 튜터 활용:</strong> 이해하기 어려운 개념이나 복잡한 계산 문제는 AI 튜터에게 질문하여 완벽하게 이해하고 넘어가세요.</li>
-                        <li><strong>오답 노트 완벽 정리:</strong> 틀린 문제는 LITE의 스마트 오답 노트를 활용하여 주기적으로 복습하고, 취약 유형을 집중적으로 보완하세요.</li>
-                        <li><strong>학습 통계 분석:</strong> 과목별 정답률과 학습 진행 상황을 통계 분석 기능으로 확인하며 자신에게 맞는 학습 계획을 수립하고 조정하세요.</li>
-                        <li><strong>꾸준함 유지:</strong> 매일 조금씩이라도 꾸준히 학습하는 습관을 LITE의 스트릭 기능을 통해 유지하며 합격에 필요한 학습량을 채워나가세요.</li>
+                        <li><strong>예금성 상품:</strong> 예금, 적금, 예탁금 등 (원금 보장 위주)</li>
+                        <li><strong>대출성 상품:</strong> 대출, 신용카드, 할부금융 등</li>
+                        <li><strong>투자성 상품:</strong> 금융투자상품(증권, 파생상품), 신탁, 투자일임 등 (원금 손실 가능성)</li>
+                        <li><strong>보장성 상품:</strong> 보험, 공제 등 (위험 보장 목적)</li>
                     </ol>
-                    <p>투자자산운용사는 방대한 학습량을 요구하지만, LITE의 체계적인 학습 시스템과 함께라면 효율적인 준비가 가능합니다.</p>
-                </div>
-            </section>
+                    <h5>(2) 자본시장법상 '금융투자상품'의 정의 및 분류</h5>
+                    <p>금융투자상품은 <strong>'이익을 얻거나 손실을 회피할 목적으로 현재 또는 장래의 특정 시점에 금전 등을 지급하기로 약정함으로써 취득하는 권리'</strong>로서, <strong>원금 손실 가능성(투자성)</strong>이 있는 것을 말합니다.</p>
+                    <ul>
+                        <li><strong>증권 (Securities):</strong>
+                            <ul>
+                                <li>내용: 투자자가 지급한 금전 외에 <strong>추가적인 지급 의무가 없는</strong> 상품입니다.</li>
+                                <li>종류: 채무증권, 지분증권, 수익증권, 투자계약증권, 파생결합증권(ELS, DLS 등), 증권예탁증권(DR)</li>
+                            </ul>
+                        </li>
+                        <li><strong>파생상품 (Derivatives):</strong>
+                            <ul>
+                                <li>내용: 기초자산의 가치 변동에 따라 가격이 결정되며, 원금을 초과하여 <strong>추가 손실이 발생할 가능성</strong>이 있는 상품입니다.</li>
+                                <li>종류: 장내파생상품(선물, 옵션 등), 장외파생상품(선도, 스왑 등)</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <h5>(3) 금융상품의 주요 특성 (선택 시 고려사항)</h5>
+                    <ul>
+                        <li><strong>수익성:</strong> 투자 대비 얻을 수 있는 이익의 정도</li>
+                        <li><strong>안전성:</strong> 원금과 이자가 안전하게 보호되는 정도 (예금자보호제도 등)</li>
+                        <li><strong>유동성(환금성):</strong> 필요할 때 현금으로 전환할 수 있는 속도와 용이성</li>
+                    </ul>
+                    <p><strong>Tip:</strong> 시험 대비 시에는 <strong>증권과 파생상품을 구분하는 기준(추가 지급 의무 여부)</strong>과 <strong>금융소비자보호법상의 상품 분류</strong>를 명확히 숙지하는 것이 중요합니다.</p>
+                </section>
+            </div>
+
+            <div id="glossary" class="tab-content">
+                <section>
+                    <h2>용어사전</h2>
+                    <dl>
+                        <dt><strong>CIM (Certified Investment Manager)</strong></dt>
+                        <dd>투자자산운용사. 금융투자협회에서 주관하는 국가공인 민간자격증으로, 투자자산 운용 전문 인력임을 증명합니다.</dd>
+                        <dt><strong>펀드매니저 (Fund Manager)</strong></dt>
+                        <dd>투자 신탁 재산을 운용하는 전문가로, 투자자의 자금을 모아 주식, 채권 등 다양한 자산에 투자하여 수익을 창출하는 역할을 합니다.</dd>
+                        <dt><strong>VaR (Value at Risk)</strong></dt>
+                        <dd>시장 위험 측정 지표 중 하나로, 특정 기간 동안 특정 신뢰 수준에서 발생할 수 있는 최대 예상 손실 금액을 나타냅니다.</dd>
+                    </dl>
+                </section>
+            </div>
         </main>
     </div>
 </body>

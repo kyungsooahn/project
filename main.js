@@ -715,17 +715,44 @@
         }
     };
 
-    // window.addEventListener('DOMContentLoaded', () => {
-    //     console.log("main.js: DOMContentLoaded fired. Checking if exams can be rendered early (for debug).");
-    //     if (Object.keys(window.examData).length > 0) {
-    //         console.log("main.js: window.examData has data on DOMContentLoaded. Rendering early.");
-    //         window.renderExams();
-    //         window.checkReviews();
-    //         window.updateStreakUI();
-    //     } else {
-    //         console.log("main.js: window.examData is empty on DOMContentLoaded. Waiting for dataLoaded events.");
-    //     }
-    // });
+    window.openTab = function(evt, tabName) {
+        console.log(`openTab called with tabName: ${tabName}`);
+        let i, tabcontent, tabbuttons;
+
+        // Get all elements with class="tab-content" and hide them
+        tabcontent = document.getElementsByClassName("tab-content");
+        console.log(`Found ${tabcontent.length} tab-content elements.`);
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+            tabcontent[i].classList.remove("active"); // Remove active class from all content divs
+            console.log(`Hiding tab content: ${tabcontent[i].id}`);
+        }
+
+        // Get all elements with class="tab-button" and remove the class "active"
+        tabbuttons = document.getElementsByClassName("tab-button");
+        console.log(`Found ${tabbuttons.length} tab-button elements.`);
+        for (i = 0; i < tabbuttons.length; i++) {
+            tabbuttons[i].className = tabbuttons[i].className.replace(" active", "");
+            console.log(`Deactivating tab button: ${tabbuttons[i].innerText}`);
+        }
+
+        // Show the current tab, and add an "active" class to the button that opened the tab
+        const targetTabContent = document.getElementById(tabName);
+        if (targetTabContent) {
+            // targetTabContent.style.display = "block"; // Removed, as active class will handle it
+            targetTabContent.classList.add("active"); // Add active class to the content div
+            console.log(`Displaying target tab content: ${tabName} and adding active class.`);
+        } else {
+            console.error(`Target tab content with ID "${tabName}" not found.`);
+        }
+        
+        if (evt && evt.currentTarget) {
+            evt.currentTarget.className += " active";
+            console.log(`Activating tab button: ${evt.currentTarget.innerText}`);
+        } else {
+            console.warn("Event or currentTarget missing when activating tab button.");
+        }
+    };
 
     window.addEventListener('load', window.updateAuthUI);
 
@@ -747,14 +774,35 @@
                 <p>&copy; 2026 LITE. All rights reserved.</p>
             </footer>
         `;
-        const container = document.querySelector('.container'); // Assuming .container is the main wrapper
-        if (container) {
-            container.insertAdjacentHTML('beforeend', footerHtml);
+        const mainElement = document.querySelector('main');
+        if (mainElement) {
+            mainElement.insertAdjacentHTML('afterend', footerHtml);
+        } else {
+            // Fallback for pages without a main element, although unlikely for this specific issue
+            const container = document.querySelector('.container');
+            if (container) {
+                container.insertAdjacentHTML('beforeend', footerHtml);
+            }
         }
     };
 
     window.addEventListener('DOMContentLoaded', () => {
         // Render footer after DOM is loaded
         window.renderFooter();
+
+        // Attach event listeners to tab buttons
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const tabName = button.dataset.tab;
+                window.openTab(event, tabName);
+            });
+        });
+
+        // Initialize the first tab as active when the DOM is loaded if tabs are present
+        const firstTabButton = document.querySelector('.tab-button.active');
+        if (firstTabButton) {
+            firstTabButton.click();
+        }
     });
 })();

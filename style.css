@@ -268,6 +268,7 @@ footer {
     text-align: center;
     font-size: 0.85rem;
     color: var(--secondary);
+    clear: both; /* Added to explicitly clear preceding floats */
 }
 
 @media (max-width: 600px) {
@@ -332,6 +333,7 @@ footer {
     padding: 2.5rem;
     border-radius: 1rem;
     line-height: 1.8;
+    overflow: hidden; /* Added to establish a new Block Formatting Context */
 }
 
 @media (max-width: 600px) {

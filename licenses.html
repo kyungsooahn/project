@@ -60,6 +60,7 @@
         .license-item:hover p {
             color: rgba(255,255,255,0.8);
         }
+        /* .license-content-area, .loading-spinner styles are no longer needed but keeping them for now to avoid breaking other files that might use this CSS */
         .license-content-area {
             background: rgba(0,0,0,0.03);
             border-radius: 0.75rem;
@@ -112,10 +113,10 @@
         <section class="license-selection-section" style="margin-top: 2rem;">
             <h3>관심 있는 자격증을 선택하세요</h3>
             <div class="license-list">
-                <div class="license-item" data-src="cim.html" data-target-title="투자자산운용사 (CIM)">
+                <a href="cim.html" class="license-item">
                     <h3>투자자산운용사 (CIM)</h3>
                     <p>금융기관에서 고객의 자산을 운용하는 전문 인력을 양성하는 시험입니다.</p>
-                </div>
+                </a>
                 <div class="license-item" data-src="fia.html" data-target-title="금융투자분석사 (FIA)">
                     <h3>금융투자분석사 (FIA)</h3>
                     <p>금융투자회사에서 분석 보고서를 작성하는 애널리스트 자격입니다.</p>
@@ -131,58 +132,6 @@
             </div>
         </section>
 
-        <section class="license-detail-section" style="margin-top: 2rem;">
-            <div class="license-content-area" id="license-detail-content">
-                <h2 id="license-detail-title">자격증 내용을 보려면 위에서 선택하세요.</h2>
-                <div class="loading-spinner" id="loading-spinner"></div>
-                <div id="dynamic-content">
-                    <!-- Dynamic content will be loaded here -->
-                </div>
-            </div>
-        </section>
-
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const licenseItems = document.querySelectorAll('.license-item');
-            const licenseDetailContent = document.getElementById('dynamic-content');
-            const licenseDetailTitle = document.getElementById('license-detail-title');
-            const loadingSpinner = document.getElementById('loading-spinner');
-
-            licenseItems.forEach(item => {
-                item.addEventListener('click', async () => {
-                    const src = item.dataset.src;
-                    const title = item.dataset.targetTitle;
-
-                    licenseDetailTitle.textContent = `${title} 상세 정보`;
-                    licenseDetailContent.innerHTML = ''; // Clear previous content
-                    loadingSpinner.style.display = 'block'; // Show spinner
-
-                    try {
-                        const response = await fetch(src);
-                        const text = await response.text();
-
-                        // Parse the HTML and extract the main content
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(text, 'text/html');
-                        // Assuming the main content is within a <main> or similar tag in the source HTML
-                        const mainContent = doc.querySelector('body .container > *:not(header)'); // Exclude header
-
-                        if (mainContent) {
-                            licenseDetailContent.innerHTML = mainContent.innerHTML;
-                        } else {
-                            licenseDetailContent.textContent = '콘텐츠를 불러오는 데 실패했습니다. 원본 파일의 구조를 확인해 주세요.';
-                        }
-                    } catch (error) {
-                        console.error('Error loading license content:', error);
-                        licenseDetailContent.textContent = '콘텐츠를 불러오는 중 오류가 발생했습니다.';
-                    } finally {
-                        loadingSpinner.style.display = 'none'; // Hide spinner
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 </html>
