@@ -756,5 +756,32 @@
     window.addEventListener('DOMContentLoaded', () => {
         // Render footer after DOM is loaded
         window.renderFooter();
+
+        // Collapsible sections logic
+        const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+
+        collapsibleHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                let content = header.nextElementSibling;
+                while (content && !content.classList.contains('collapsible-content')) {
+                    content = content.nextElementSibling;
+                }
+
+                if (content) {
+                    if (content.classList.contains('hidden')) {
+                        content.classList.remove('hidden');
+                        header.classList.remove('collapsed');
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    } else {
+                        content.style.maxHeight = 0;
+                        content.addEventListener('transitionend', function handler() {
+                            content.classList.add('hidden');
+                            header.classList.add('collapsed');
+                            content.removeEventListener('transitionend', handler);
+                        }, { once: true });
+                    }
+                }
+            });
+        });
     });
 })();

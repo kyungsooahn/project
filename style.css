@@ -603,3 +603,33 @@ footer {
     background: var(--primary);
     color: white;
 }
+
+/* Collapsible Sections */
+.collapsible-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 0.5rem; /* For the arrow */
+}
+
+.collapsible-header .arrow {
+    transition: transform 0.2s;
+    font-size: 1rem;
+    margin-left: 0.5rem;
+}
+
+.collapsible-header.collapsed .arrow {
+    transform: rotate(-90deg); /* Arrow pointing down when collapsed */
+}
+
+.collapsible-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease-out; /* Smooth transition */
+}
+
+.collapsible-content.hidden {
+    max-height: 0;
+    visibility: hidden; /* Ensure content is not interactable */
+    opacity: 0;
+}
