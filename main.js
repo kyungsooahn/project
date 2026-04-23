@@ -813,19 +813,38 @@ window.addEventListener('DOMContentLoaded', () => {
         const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
 
         collapsibleHeaders.forEach(header => {
-            header.addEventListener('click', () => {
-                let content = header.nextElementSibling;
-                while (content && !content.classList.contains('collapsible-content')) {
-                    content = content.nextElementSibling;
+            // Set initial state: if content is hidden, header should have 'collapsed' class
+            const content = header.nextElementSibling;
+            if (content && content.classList.contains('collapsible-content')) {
+                if (content.classList.contains('hidden')) {
+                    header.classList.add('collapsed');
+                    content.style.maxHeight = 0; // Ensure initial max-height is 0
+                } else {
+                    header.classList.remove('collapsed');
+                    // Ensure max-height is set for initially expanded content for proper collapsing
+                    content.style.maxHeight = content.scrollHeight + "px";
                 }
+            }
 
-                if (content) {
+
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                if (content && content.classList.contains('collapsible-content')) {
                     if (content.classList.contains('hidden')) {
+                        // Expand
                         content.classList.remove('hidden');
                         header.classList.remove('collapsed');
-                        content.style.maxHeight = content.scrollHeight + "px";
+                        content.style.maxHeight = content.scrollHeight + "px"; // Expand to full height
+                        content.addEventListener('transitionend', function handler() {
+                            content.style.maxHeight = null; // Remove max-height after transition for dynamic content
+                            content.removeEventListener('transitionend', handler);
+                        }, { once: true });
                     } else {
-                        content.style.maxHeight = 0;
+                        // Collapse
+                        content.style.maxHeight = content.scrollHeight + "px"; // Set explicit height before collapsing
+                        // Force reflow
+                        void content.offsetWidth;
+                        content.style.maxHeight = 0; // Collapse
                         content.addEventListener('transitionend', function handler() {
                             content.classList.add('hidden');
                             header.classList.add('collapsed');
