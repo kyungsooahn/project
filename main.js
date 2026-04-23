@@ -790,10 +790,6 @@
         // Render footer after DOM is loaded
         window.renderFooter();
 
-window.addEventListener('DOMContentLoaded', () => {
-        // Render footer after DOM is loaded
-        window.renderFooter();
-
         // Attach event listeners to tab buttons
         const tabButtons = document.querySelectorAll('.tab-button');
         tabButtons.forEach(button => {
@@ -808,52 +804,5 @@ window.addEventListener('DOMContentLoaded', () => {
         if (firstTabButton) {
             firstTabButton.click();
         }
-
-        // Collapsible sections logic
-        const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
-
-        collapsibleHeaders.forEach(header => {
-            // Set initial state: if content is hidden, header should have 'collapsed' class
-            const content = header.nextElementSibling;
-            if (content && content.classList.contains('collapsible-content')) {
-                if (content.classList.contains('hidden')) {
-                    header.classList.add('collapsed');
-                    content.style.maxHeight = 0; // Ensure initial max-height is 0
-                } else {
-                    header.classList.remove('collapsed');
-                    // Ensure max-height is set for initially expanded content for proper collapsing
-                    content.style.maxHeight = content.scrollHeight + "px";
-                }
-            }
-
-
-            header.addEventListener('click', () => {
-                const content = header.nextElementSibling;
-                if (content && content.classList.contains('collapsible-content')) {
-                    if (content.classList.contains('hidden')) {
-                        // Expand
-                        content.classList.remove('hidden');
-                        header.classList.remove('collapsed');
-                        content.style.maxHeight = content.scrollHeight + "px"; // Expand to full height
-                        content.addEventListener('transitionend', function handler() {
-                            content.style.maxHeight = null; // Remove max-height after transition for dynamic content
-                            content.removeEventListener('transitionend', handler);
-                        }, { once: true });
-                    } else {
-                        // Collapse
-                        content.style.maxHeight = content.scrollHeight + "px"; // Set explicit height before collapsing
-                        // Force reflow
-                        void content.offsetWidth;
-                        content.style.maxHeight = 0; // Collapse
-                        content.addEventListener('transitionend', function handler() {
-                            content.classList.add('hidden');
-                            header.classList.add('collapsed');
-                            content.removeEventListener('transitionend', handler);
-                        }, { once: true });
-                    }
-                }
-            });
-        });
-    });
     });
 })();
